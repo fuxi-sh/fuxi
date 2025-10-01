@@ -1,0 +1,55 @@
+use crate::types::{
+    alias::{Size, Time, default_time},
+    base::{MyDataFrame, MyDataFrameData, SymbolCode},
+    position::Position,
+};
+use fuxi_macros::{define_map, model};
+
+#[model(python)]
+pub struct FundingRate {
+    pub code: SymbolCode,
+    pub value: Size,
+    pub time: Time,
+    pub next_time: Time,
+    pub min: Size,
+    pub max: Size,
+    pub update_time: Time,
+}
+
+impl FundingRate {
+    pub fn new(code: SymbolCode) -> Self {
+        FundingRateData {
+            code,
+            value: Default::default(),
+            time: default_time(),
+            next_time: default_time(),
+            min: Default::default(),
+            max: Default::default(),
+            update_time: default_time(),
+        }
+        .into()
+    }
+}
+
+#[model(python)]
+pub struct Symbol {
+    pub code: SymbolCode,
+    pub taker: Size,
+    pub maker: Size,
+    pub position: Position,
+    candles: MyDataFrame,
+}
+
+define_map!(pub SymbolMap is SymbolCode to Symbol);
+
+impl Symbol {
+    pub fn new(code: SymbolCode, taker: Size, maker: Size, lever: Size) -> Self {
+        Self::from(SymbolData {
+            code,
+            taker,
+            maker,
+            position: Position::new(code, lever),
+            candles: MyDataFrameData::default().into(),
+        })
+    }
+}

@@ -1,0 +1,197 @@
+use proc_macro2::TokenStream;
+use quote::quote;
+use syn::{Ident, Result, Token, Type, Visibility, parse::ParseStream};
+
+mod kw {
+    syn::custom_keyword!(is);
+    syn::custom_keyword!(to);
+}
+
+pub fn generate(ast: ParseStream) -> Result<TokenStream> {
+    let vis = if ast.peek(Token![pub]) {
+        ast.parse::<Visibility>()?
+    } else {
+        Visibility::Inherited
+    };
+    let name = ast.parse::<Ident>()?;
+    ast.parse::<kw::is>()?;
+    let key = ast.parse::<Box<Type>>()?;
+    ast.parse::<kw::to>()?;
+    let value = ast.parse::<Box<Type>>()?;
+
+    let keys_iter_name = Ident::new(&format!("{name}KeysIterable"), name.span());
+    let values_iter_name = Ident::new(&format!("{name}ValuesIterable"), name.span());
+    let items_iter_name = Ident::new(&format!("{name}ItemsIterable"), name.span());
+
+    let mut tokens: Vec<TokenStream> = vec![];
+
+    tokens.push(quote! {
+        #[::pyo3::pyclass(frozen, mapping)]
+        #[derive(Clone, Default)]
+        #vis struct #name(crate::types::alias::SafeMap<#key, #value>);
+
+        impl From<crate::types::alias::SafeMap<#key, #value>> for #name {
+            #[inline]
+            fn from(value: crate::types::alias::SafeMap<#key, #value>) -> Self {
+                Self(value)
+            }
+        }
+
+        impl From<crate::types::alias::Map<#key, #value>> for #name {
+            #[inline]
+            fn from(value: crate::types::alias::Map<#key, #value>) -> Self {
+                Self(crate::types::alias::new_safe(value))
+            }
+        }
+
+        impl #name {
+            #[inline]
+            pub fn maps(&self) -> ::parking_lot::MappedRwLockReadGuard<crate::types::alias::Map<#key, #value>> {
+                ::parking_lot::RwLockReadGuard::map(self.0.read(), |s| s)
+            }
+            #[inline]
+            pub fn maps_mut(&self) -> ::parking_lot::MappedRwLockWriteGuard<crate::types::alias::Map<#key, #value>> {
+                ::parking_lot::RwLockWriteGuard::map(self.0.write(), |s|  s)
+            }
+        }
+
+        #[::pyo3::pymethods]
+        impl #name {
+            fn __repr__(&self) -> &str {
+                stringify!(#name)
+            }
+
+            fn __getitem__(&self, key: #key) -> Option<#value> {
+                self.maps().get(&key).cloned()
+            }
+
+            fn __len__(&self) -> usize {
+                self.maps().len()
+            }
+
+            fn __contains__(&self, key: #key) -> bool {
+                self.maps().contains_key(&key)
+            }
+
+            fn __iter__(&self) -> #keys_iter_name {
+                #keys_iter_name {
+                    data: self.clone(),
+                    index: 0,
+                }
+            }
+
+            fn keys(&self) -> #keys_iter_name {
+                #keys_iter_name {
+                    data: self.clone(),
+                    index: 0,
+                }
+            }
+
+            fn values(&self) -> #values_iter_name {
+                #values_iter_name {
+                    data: self.clone(),
+                    index: 0,
+                }
+            }
+
+            fn items(&self) -> #items_iter_name {
+                #items_iter_name {
+                    data: self.clone(),
+                    index: 0,
+                }
+            }
+        }
+    });
+
+    tokens.push(quote! {
+        #[::pyo3::pyclass]
+        #[derive(Clone, Default)]
+        #vis struct #keys_iter_name {
+            pub data: #name,
+            pub index: usize,
+        }
+
+        #[::pyo3::pymethods]
+        impl #keys_iter_name {
+            fn __repr__(&self) -> &str {
+                stringify!(#keys_iter_name)
+            }
+
+            fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
+                slf
+            }
+
+            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#key> {
+                if slf.index < slf.data.maps().len() {
+                    let result = slf.data.maps().get_index(slf.index).map(|(k, _)| k.clone());
+                    slf.index += 1;
+                    result
+                } else {
+                    None
+                }
+            }
+        }
+    });
+
+    tokens.push(quote! {
+        #[::pyo3::pyclass]
+        #[derive(Clone, Default)]
+        #vis struct #values_iter_name {
+            pub data: #name,
+            pub index: usize,
+        }
+
+        #[::pyo3::pymethods]
+        impl #values_iter_name {
+            fn __repr__(&self) -> &str {
+                stringify!(#values_iter_name)
+            }
+
+            fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
+                slf
+            }
+
+            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#value> {
+                if slf.index < slf.data.maps().len() {
+                    let result = slf.data.maps().get_index(slf.index).map(|(_, v)| v.clone());
+                    slf.index += 1;
+                    result
+                } else {
+                    None
+                }
+            }
+        }
+    });
+
+    tokens.push(quote! {
+        #[::pyo3::pyclass]
+        #[derive(Clone, Default)]
+        #vis struct #items_iter_name {
+            pub data: #name,
+            pub index: usize,
+        }
+
+        #[::pyo3::pymethods]
+        impl #items_iter_name {
+            fn __repr__(&self) -> &str {
+                stringify!(#items_iter_name)
+            }
+
+            fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
+                slf
+            }
+
+            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<(#key, #value)> {
+                if slf.index < slf.data.maps().len() {
+                    let result = slf.data.maps().get_index(slf.index).map(|(k, v)| (k.clone(), v.clone()));
+                    slf.index += 1;
+                    result
+                } else {
+                    None
+                }
+            }
+        }
+    });
+
+    Ok(quote! { #(#tokens)* })
+}

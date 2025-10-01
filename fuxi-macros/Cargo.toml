@@ -1,0 +1,27 @@
+[package]
+name = "fuxi-macros"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+
+[lib]
+proc-macro = true
+
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+serde_json = { workspace = true }
+
+
+[build-dependencies]
+serde_json = { workspace = true }
+reqwest = { workspace = true, features = [
+    "blocking",
+    "rustls-tls",
+    "rustls-tls-native-roots",
+    "json",
+] }
