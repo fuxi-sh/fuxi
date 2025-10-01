@@ -1,12 +1,12 @@
 use crate::types::{
     alias::{Price, Size, Time},
-    base::{OrderStatus, SymbolCode, TradeAction, TradeMethod, TradeSide},
+    base::{Codes, OrderStatus, TradeAction, TradeMethod, TradeSide},
 };
 use fuxi_macros::{define_map, model};
 
 #[model(python)]
 pub struct Order {
-    pub code: SymbolCode,
+    pub code: Codes,
     pub id: String,
     pub method: TradeMethod,
     pub side: TradeSide,

@@ -10,8 +10,8 @@ use crate::{
     },
     types::{
         base::{
-            CandlePeriod, CoinCode, LogLevel, Market, OrderStatus, Pnl, RunMode, SymbolCode,
-            TradeAction, TradeMethod, TradeSide, Volume,
+            CandlePeriod, Codes, Coins, LogLevel, Market, OrderStatus, Pnl, RunMode, TradeAction,
+            TradeMethod, TradeSide, Volume,
         },
         order::Order,
         position::{Position, SidePosition},
@@ -34,8 +34,8 @@ fn _sdk(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<TradeAction>()?;
     m.add_class::<OrderStatus>()?;
     m.add_class::<CandlePeriod>()?;
-    m.add_class::<CoinCode>()?;
-    m.add_class::<SymbolCode>()?;
+    m.add_class::<Coins>()?;
+    m.add_class::<Codes>()?;
     m.add_class::<Volume>()?;
     m.add_class::<Pnl>()?;
     m.add_class::<Order>()?;

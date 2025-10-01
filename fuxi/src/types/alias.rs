@@ -4,7 +4,6 @@ use chrono_tz::Tz;
 use indexmap::IndexMap;
 use parking_lot::RwLock;
 use pyo3::{Py, PyAny, types::PyFunction};
-use pyo3_polars::PyDataFrame;
 use rust_decimal::Decimal;
 use std::sync::Arc;
 
@@ -35,5 +34,3 @@ pub type SharedPyObj<T> = Arc<Py<T>>;
 pub type SharedPyFunc = SharedPyObj<PyFunction>;
 
 pub type SharedPyParams = SharedPyObj<PyAny>;
-
-pub type SharedPyCandles = SharedPyObj<PyDataFrame>;

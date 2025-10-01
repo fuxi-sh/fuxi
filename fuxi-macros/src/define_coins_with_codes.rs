@@ -10,7 +10,7 @@ struct Coin {
     pub decimals: LitInt,
 }
 
-struct Code {
+struct Symbol {
     pub variant: Ident,
     pub id: LitStr,
     pub decimals: LitInt,
@@ -95,7 +95,7 @@ pub fn generate() -> Result<TokenStream> {
             .as_str(),
             Span::call_site(),
         );
-        symbols.push(Code {
+        symbols.push(Symbol {
             variant,
             id,
             decimals,
@@ -139,7 +139,7 @@ pub fn generate() -> Result<TokenStream> {
             format!("{}/USDC:USDC", name.to_uppercase()).as_str(),
             Span::call_site(),
         );
-        symbols.push(Code {
+        symbols.push(Symbol {
             variant,
             id,
             decimals,
@@ -171,12 +171,12 @@ pub fn generate() -> Result<TokenStream> {
 
     tokens.push(quote! {
         #[::fuxi_macros::model(python)]
-        pub enum CoinCode {
+        pub enum Coins {
             #(#coin_variant_tokens)*
         }
 
         #[::pyo3::pymethods]
-        impl CoinCode {
+        impl Coins {
             pub fn id(&self) -> &str {
                 match self {
                     #(#coin_id_tokens)*
@@ -238,7 +238,7 @@ pub fn generate() -> Result<TokenStream> {
         }
         if let Some(base_coin) = &item.base_coin {
             symbol_base_tokens.push(quote! {
-                Self::#variant => Some(CoinCode::#base_coin),
+                Self::#variant => Some(Coins::#base_coin),
             });
         } else {
             symbol_base_tokens.push(quote! {
@@ -255,12 +255,12 @@ pub fn generate() -> Result<TokenStream> {
 
     tokens.push(quote! {
         #[::fuxi_macros::model(python)]
-        pub enum SymbolCode {
+        pub enum Codes {
             #(#symbol_variant_tokens)*
         }
 
         #[::pyo3::pymethods]
-        impl SymbolCode {
+        impl Codes {
             pub fn id(&self) -> &str {
                 match self {
                     #(#symbol_id_tokens)*
@@ -281,13 +281,13 @@ pub fn generate() -> Result<TokenStream> {
                     #(#symbol_is_swap_tokens)*
                 }
             }
-            pub fn base(&self) -> Option<CoinCode> {
+            pub fn base(&self) -> Option<Coins> {
                 match self {
                     #(#symbol_base_tokens)*
                 }
             }
-            pub fn quote(&self) -> CoinCode {
-                CoinCode::USDC
+            pub fn quote(&self) -> Coins {
+                Coins::USDC
             }
             pub fn decimals(&self) -> ::rust_decimal::Decimal {
                 match self {

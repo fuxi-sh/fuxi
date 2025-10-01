@@ -1,13 +1,13 @@
 use crate::types::{
     alias::{Size, Time, default_time},
-    base::{MyDataFrame, MyDataFrameData, SymbolCode},
+    base::{Codes, MyDataFrame, MyDataFrameData},
     position::Position,
 };
 use fuxi_macros::{define_map, model};
 
 #[model(python)]
 pub struct FundingRate {
-    pub code: SymbolCode,
+    pub code: Codes,
     pub value: Size,
     pub time: Time,
     pub next_time: Time,
@@ -17,7 +17,7 @@ pub struct FundingRate {
 }
 
 impl FundingRate {
-    pub fn new(code: SymbolCode) -> Self {
+    pub fn new(code: Codes) -> Self {
         FundingRateData {
             code,
             value: Default::default(),
@@ -33,17 +33,17 @@ impl FundingRate {
 
 #[model(python)]
 pub struct Symbol {
-    pub code: SymbolCode,
+    pub code: Codes,
     pub taker: Size,
     pub maker: Size,
     pub position: Position,
     candles: MyDataFrame,
 }
 
-define_map!(pub SymbolMap is SymbolCode to Symbol);
+define_map!(pub SymbolMap is Codes to Symbol);
 
 impl Symbol {
-    pub fn new(code: SymbolCode, taker: Size, maker: Size, lever: Size) -> Self {
+    pub fn new(code: Codes, taker: Size, maker: Size, lever: Size) -> Self {
         Self::from(SymbolData {
             code,
             taker,

@@ -2,7 +2,7 @@ use crate::{
     engine::context::Context,
     types::{
         alias::{Price, Size},
-        base::{RunMode, SymbolCode, TradeAction, TradeMethod, TradeSide},
+        base::{Codes, RunMode, TradeAction, TradeMethod, TradeSide},
     },
 };
 use anyhow::Result;
@@ -21,7 +21,7 @@ pub trait Runtime: Send + Sync {
     fn order_place(
         &self,
         ctx: Context,
-        code: SymbolCode,
+        code: Codes,
         method: TradeMethod,
         side: TradeSide,
         action: TradeAction,
@@ -29,9 +29,9 @@ pub trait Runtime: Send + Sync {
         price: Price,
     ) -> Result<String>;
 
-    fn order_cancel(&self, ctx: Context, code: SymbolCode, id: &str) -> Result<()>;
+    fn order_cancel(&self, ctx: Context, code: Codes, id: &str) -> Result<()>;
 
-    fn candles(&self, ctx: Context, code: SymbolCode, size: Option<usize>) -> Result<Py<PyAny>>;
+    fn candles(&self, ctx: Context, code: Codes, size: Option<usize>) -> Result<Py<PyAny>>;
 }
 
 pub trait Strategy: Send + Sync {
