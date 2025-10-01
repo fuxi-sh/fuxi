@@ -193,7 +193,7 @@ impl Runtime for Backtest {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn order_place(
+    fn place_order(
         &self,
         fuxi: Context,
         code: SymbolCode,
@@ -206,7 +206,7 @@ impl Runtime for Backtest {
         todo!()
     }
 
-    fn order_cancel(&self, fuxi: Context, code: SymbolCode, id: &str) -> Result<()> {
+    fn cancel_order(&self, fuxi: Context, code: SymbolCode, id: &str) -> Result<()> {
         todo!()
     }
 

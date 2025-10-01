@@ -4,7 +4,7 @@ use crate::{
     types::{
         alias::{Time, default_time},
         base::{LogLevel, Mode, SymbolCode, Volume},
-        symbol::SymbolMap,
+        market::SymbolMap,
     },
 };
 use anyhow::{Result, anyhow};

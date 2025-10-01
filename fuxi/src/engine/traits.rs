@@ -17,7 +17,7 @@ pub trait Runtime: Send + Sync {
     fn run(&self, context: Context) -> Result<()>;
 
     #[allow(clippy::too_many_arguments)]
-    fn order_place(
+    fn place_order(
         &self,
         context: Context,
         code: Codes,
@@ -28,14 +28,13 @@ pub trait Runtime: Send + Sync {
         price: Price,
     ) -> Result<String>;
 
-    fn order_cancel(&self, context: Context, code: Codes, id: &str) -> Result<()>;
+    fn cancel_order(&self, context: Context, code: Codes, id: &str) -> Result<()>;
 }
 
 pub trait Strategy: Send + Sync {
-    fn on_init(&self, context: Context) -> Result<()>;
+    fn on_start(&self, context: Context) -> Result<()>;
     fn on_stop(&self, context: Context) -> Result<()>;
-    fn on_candle(&self, context: Context) -> Result<()>;
-    fn on_funding_rate(&self, context: Context) -> Result<()>;
+    fn on_tick(&self, context: Context) -> Result<()>;
     fn on_position(&self, context: Context) -> Result<()>;
     fn on_order(&self, context: Context) -> Result<()>;
     fn on_cash(&self, context: Context) -> Result<()>;

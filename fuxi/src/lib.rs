@@ -13,9 +13,9 @@ use crate::{
             Codes, Coins, Diretion, Interval, LogLevel, Market, Method, Mode, OrderStatus, Pnl,
             Side, Volume,
         },
+        market::{Candle, FundingRate, Symbol},
         order::Order,
         position::{Position, SidePosition},
-        symbol::{Candle, FundingRate, Symbol},
     },
 };
 use pyo3::{
