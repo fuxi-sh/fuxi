@@ -66,6 +66,8 @@ impl Backtest {
         let end = crate::helpers::time::str_to_time(end)?;
         ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
 
+        context.set_time(begin);
+
         let backtest = Backtest::from(BacktestData {
             begin,
             end,
