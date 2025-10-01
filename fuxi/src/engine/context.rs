@@ -8,7 +8,9 @@ use crate::{
 };
 use fuxi_macros::model;
 use pyo3::{
-    Bound, pymethods,
+    Bound, PyErr, PyResult,
+    exceptions::PyNotImplementedError,
+    pymethods,
     types::{PyTuple, PyTupleMethods},
 };
 use std::fmt::Arguments;
@@ -147,5 +149,36 @@ impl Context {
                     .join(" ")
             ),
         );
+    }
+}
+
+#[pymethods]
+impl Context {
+    fn launcher(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err("子类必须实现`launcher`方法"))
+    }
+
+    fn on_start(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    fn on_stop(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    fn on_tick(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    fn on_position(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    fn on_order(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    fn on_cash(&self) -> PyResult<()> {
+        Ok(())
     }
 }
