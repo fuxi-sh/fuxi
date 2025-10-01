@@ -1,1 +1,1 @@
-from fuxi_core import *
+from ._core import *

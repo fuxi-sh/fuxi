@@ -20,7 +20,7 @@ use pyo3::{
 };
 
 #[pymodule]
-fn fuxi_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<LogLevel>()?;
     m.add_class::<Mode>()?;
     m.add_class::<Market>()?;
