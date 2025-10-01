@@ -3,7 +3,7 @@ use crate::{
     helpers::constants::FMT_S,
     types::{
         alias::{Time, default_time},
-        base::{LogLevel, Mode, SymbolCode, Volume},
+        base::{LogLevel, Mode, Volume},
         market::SymbolMap,
     },
 };
@@ -13,12 +13,13 @@ use pyo3::{
     Bound, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
-use pyo3_polars::PyExpr;
 use std::{fmt::Arguments, time::Instant};
 
 #[model(python)]
 pub struct Context {
     runtime: SharedRuntime,
+    engine_log_level: LogLevel,
+    strategy_log_level: LogLevel,
     pub time: Time,
     pub spot: Volume,
     pub swap: Volume,
@@ -26,11 +27,17 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn run(runtime: SharedRuntime) -> Result<()> {
+    pub fn run(
+        runtime: SharedRuntime,
+        engine_log_level: LogLevel,
+        strategy_log_level: LogLevel,
+    ) -> Result<()> {
         let start_time = Instant::now();
 
         let fuxi = Self::from(ContextData {
             runtime: runtime.clone(),
+            engine_log_level,
+            strategy_log_level,
             time: default_time(),
             spot: Default::default(),
             swap: Default::default(),
@@ -52,9 +59,9 @@ impl Context {
 
     pub fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
-            *self.config().log().fuxi_level()
+            *self.engine_log_level()
         } else {
-            *self.config().log().strategy_level()
+            *self.strategy_log_level()
         };
         if level < curr_level {
             return;
@@ -63,17 +70,17 @@ impl Context {
             "{} | {} | {} | {} | ==> {}\n",
             self.time().format(FMT_S),
             match self.runtime().mode() {
-                Mode::Backtest => "回测",
-                Mode::Sandbox => "沙盒",
-                Mode::Mainnet => "实盘",
+                Mode::Backtest => "📊",
+                Mode::Sandbox => "🧪",
+                Mode::Mainnet => "🚀",
             },
-            if engine { "伏羲" } else { "策略" },
+            if engine { "🐲" } else { "🐺" },
             match level {
-                LogLevel::Trace => "链路",
-                LogLevel::Debug => "调试",
-                LogLevel::Info => "信息",
-                LogLevel::Warn => "警告",
-                LogLevel::Error => "错误",
+                LogLevel::Trace => "🔗",
+                LogLevel::Debug => "🔍",
+                LogLevel::Info => "📝",
+                LogLevel::Warn => "🚨",
+                LogLevel::Error => "💥",
             },
             msg,
         ));
