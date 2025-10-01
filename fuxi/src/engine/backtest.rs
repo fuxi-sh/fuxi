@@ -24,8 +24,8 @@ impl Backtest {
     #[new]
     #[pyo3(signature = (begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000, log_level=(LogLevel::Info, LogLevel::Info)))]
     fn new(
-        begin: Time,
-        end: Time,
+        begin: &str,
+        end: &str,
         symbols: Vec<(Codes, Size, Size, Size)>,
         spot: Size,
         swap: Size,
@@ -61,6 +61,10 @@ impl Backtest {
         context.spot().set_avail(spot);
         context.swap().set_total(swap);
         context.swap().set_avail(swap);
+
+        let begin = crate::helpers::time::str_to_time(begin)?;
+        let end = crate::helpers::time::str_to_time(end)?;
+        ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
 
         let backtest = Backtest::from(BacktestData {
             begin,
