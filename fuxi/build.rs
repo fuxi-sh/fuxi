@@ -111,7 +111,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tt.add_template("TEMPLATE", TEMPLATE)?;
     let python_code = tt.render("TEMPLATE", &context)?;
 
-    let safe_path = Path::new("python/fuxi/_sdk/code.pyi");
+    let safe_path = Path::new("python/fuxi/_core/code.pyi");
     std::fs::create_dir_all(safe_path.parent().unwrap())?;
     let mut f = std::fs::OpenOptions::new()
         .write(true)
