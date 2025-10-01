@@ -51,7 +51,7 @@ impl Context {
             return;
         }
         crate::helpers::log::print(format_args!(
-            "{} | {} | {} | {} | ==> {}\n",
+            "{} | {}{}{} | ==> {}\n",
             self.time().format(FMT_S),
             match *self.mode() {
                 Mode::Backtest => "📊",
