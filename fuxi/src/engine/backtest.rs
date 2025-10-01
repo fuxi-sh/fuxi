@@ -2,7 +2,7 @@ use crate::{
     engine::{context::Context, traits::Runtime},
     types::{
         alias::{Price, Size, Time},
-        base::{Diretion, LogLevel, Method, Mode, Side, SymbolCode},
+        base::{Codes, Diretion, LogLevel, Method, Mode, Side},
     },
 };
 use anyhow::{Result, anyhow, ensure};
@@ -15,7 +15,6 @@ use polars::{
     time::{ClosedWindow, date_range},
 };
 use pyo3::{Py, PyAny};
-use pyo3_polars::PyDataFrame;
 use rust_decimal::dec;
 use std::time::Instant;
 
@@ -25,6 +24,7 @@ pub struct Backtest {
     pub spot: Size,
     pub swap: Size,
     pub history_size: usize,
+    pub codes: Vec<Codes>,
 }
 
 impl Runtime for Backtest {

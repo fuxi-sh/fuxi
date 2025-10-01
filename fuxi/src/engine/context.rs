@@ -7,19 +7,18 @@ use crate::{
         market::SymbolMap,
     },
 };
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
     Bound, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
-use std::{fmt::Arguments, time::Instant};
+use std::fmt::Arguments;
 
 #[model(python)]
 pub struct Context {
     runtime: SharedRuntime,
-    engine_log_level: LogLevel,
-    strategy_log_level: LogLevel,
+    log_level: (LogLevel, LogLevel),
     pub time: Time,
     pub spot: Volume,
     pub swap: Volume,
@@ -27,17 +26,10 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn run(
-        runtime: SharedRuntime,
-        engine_log_level: LogLevel,
-        strategy_log_level: LogLevel,
-    ) -> Result<()> {
-        let start_time = Instant::now();
-
+    pub fn run(runtime: SharedRuntime, log_level: (LogLevel, LogLevel)) -> Result<()> {
         let fuxi = Self::from(ContextData {
             runtime: runtime.clone(),
-            engine_log_level,
-            strategy_log_level,
+            log_level,
             time: default_time(),
             spot: Default::default(),
             swap: Default::default(),
@@ -46,22 +38,14 @@ impl Context {
 
         runtime.run(fuxi.clone())?;
 
-        fuxi.engine_log(
-            LogLevel::Info,
-            format_args!(
-                "运行时长: {}",
-                humantime::format_duration(start_time.elapsed())
-            ),
-        );
-
         Ok(())
     }
 
     pub fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
-            *self.engine_log_level()
+            self.log_level().0
         } else {
-            *self.strategy_log_level()
+            self.log_level().1
         };
         if level < curr_level {
             return;
@@ -167,25 +151,5 @@ impl Context {
                     .join(" ")
             ),
         );
-    }
-}
-
-#[pymethods]
-impl Context {
-    #[pyo3(signature = (code, size=None))]
-    fn candles(&self, code: SymbolCode, size: Option<usize>) -> Result<PyCandles> {
-        self.runtime().candles(self.clone(), code, size)
-    }
-
-    #[pyo3(signature = (code, expr))]
-    fn with_candles_column(&self, code: SymbolCode, expr: PyExpr) -> Result<()> {
-        self.symbols()
-            .maps()
-            .get(&code)
-            .ok_or(anyhow!("交易对不存在: {code}"))?
-            .candles()
-            .exprs_mut()
-            .push(expr.0);
-        Ok(())
     }
 }

@@ -64,10 +64,16 @@ fn generate_safe(options: &Options, ast: &ItemStruct) -> TokenStream {
 
     let mut tokens: Vec<TokenStream> = vec![];
 
-    if options.python {
-        tokens.push(quote! {
-            #[::pyo3::pyclass(frozen)]
-        });
+    if options.python.is_some() {
+        if options.abs.is_some() {
+            tokens.push(quote! {
+                #[::pyo3::pyclass(frozen, subclass)]
+            });
+        } else {
+            tokens.push(quote! {
+                #[::pyo3::pyclass(frozen)]
+            });
+        }
     }
 
     tokens.push(quote! {
@@ -116,7 +122,7 @@ fn generate_safe(options: &Options, ast: &ItemStruct) -> TokenStream {
                 continue;
             }
 
-            if options.python
+            if options.python.is_some()
                 && let Some(field_name) = field_name
             {
                 let py_field_name = Ident::new(&format!("py_{field_name}"), field_name.span());
@@ -152,7 +158,7 @@ fn generate_safe(options: &Options, ast: &ItemStruct) -> TokenStream {
         }
     });
 
-    if options.python {
+    if options.python.is_some() {
         tokens.push(quote! {
             #[::pyo3::pymethods]
             impl #name {

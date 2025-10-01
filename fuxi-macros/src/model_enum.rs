@@ -8,10 +8,14 @@ pub fn generate(attr: TokenStream, ast: ItemEnum) -> Result<TokenStream> {
 
     let mut tokens: Vec<TokenStream> = vec![];
 
-    if options.python {
+    if options.python.is_some() {
         tokens.push(quote! {
             #[::pyo3::pyclass(eq, eq_int, frozen, hash, ord, str)]
         });
+    }
+
+    if let Some(ident) = options.abs {
+        return Err(syn::Error::new_spanned(ident, "不支持抽象枚举类型"));
     }
 
     tokens.push(quote! {
