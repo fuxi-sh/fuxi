@@ -35,13 +35,11 @@ class Codes(Enum):{{ for symbol in symbols }}
 struct Coin {
     pub id: String,
     pub variant: String,
-    pub constants: String,
 }
 
 #[derive(Serialize)]
 struct Symbol {
     pub variant: String,
-    pub constants: String,
 }
 
 #[derive(Serialize)]
@@ -78,12 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             name.clone()
         }
         .to_uppercase();
-        let constants = format!("CC_{}", name.to_uppercase());
-        context.coins.push(Coin {
-            id: name,
-            variant,
-            constants,
-        });
+        context.coins.push(Coin { id: name, variant });
     }
 
     for pair in spot_json[0]["universe"].as_array().unwrap().iter() {
@@ -94,11 +87,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             continue;
         }
         let variant = context.coins[base_index as usize].variant.clone();
-        let constants = format!(
-            "SC_{}",
-            context.coins[base_index as usize].id.to_uppercase()
-        );
-        context.symbols.push(Symbol { variant, constants });
+
+        context.symbols.push(Symbol { variant });
     }
 
     let swap_json: Value = serde_json::from_str(&std::fs::read_to_string(&swap_path)?)?;
@@ -114,8 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             format!("{name}_SWAP")
         }
         .to_uppercase();
-        let constants = format!("SC_{}_SWAP", name.to_uppercase());
-        context.symbols.push(Symbol { variant, constants });
+        context.symbols.push(Symbol { variant });
     }
 
     let mut tt = TinyTemplate::new();

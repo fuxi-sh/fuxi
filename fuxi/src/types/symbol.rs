@@ -1,6 +1,6 @@
 use crate::types::{
     alias::{Size, Time, default_time},
-    base::{Codes, MyDataFrame, MyDataFrameData},
+    base::Codes,
     position::Position,
 };
 use fuxi_macros::{define_map, model};
@@ -37,7 +37,6 @@ pub struct Symbol {
     pub taker: Size,
     pub maker: Size,
     pub position: Position,
-    candles: MyDataFrame,
 }
 
 define_map!(pub SymbolMap is Codes to Symbol);
@@ -49,7 +48,6 @@ impl Symbol {
             taker,
             maker,
             position: Position::new(code, lever),
-            candles: MyDataFrameData::default().into(),
         })
     }
 }

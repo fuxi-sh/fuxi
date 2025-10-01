@@ -3,7 +3,6 @@ use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 use indexmap::IndexMap;
 use parking_lot::RwLock;
-use pyo3::{Py, PyAny, types::PyFunction};
 use rust_decimal::Decimal;
 use std::sync::Arc;
 
@@ -28,9 +27,3 @@ pub fn new_safe<T>(data: T) -> Safe<T> {
 pub type Map<K, V> = IndexMap<K, V>;
 
 pub type SafeMap<K, V> = Safe<Map<K, V>>;
-
-pub type SharedPyObj<T> = Arc<Py<T>>;
-
-pub type SharedPyFunc = SharedPyObj<PyFunction>;
-
-pub type SharedPyParams = SharedPyObj<PyAny>;

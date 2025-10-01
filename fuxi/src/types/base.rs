@@ -1,6 +1,5 @@
 use crate::types::alias::Size;
 use fuxi_macros::{define_coins_with_codes, model};
-use polars::{frame::DataFrame, prelude::Expr};
 
 #[model(python)]
 pub enum LogLevel {
@@ -105,11 +104,4 @@ impl Default for Pnl {
         }
         .into()
     }
-}
-
-#[model]
-#[derive(Default)]
-pub struct MyDataFrame {
-    dataframe: DataFrame,
-    exprs: Vec<Expr>,
 }
