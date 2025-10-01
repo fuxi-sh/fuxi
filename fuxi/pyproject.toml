@@ -18,4 +18,4 @@ dynamic = ["version", "license"]
 [tool.maturin]
 features = ["pyo3/extension-module"]
 python-source = "python"
-module-name = "fuxi._sdk"
+module-name = "fuxi_core"

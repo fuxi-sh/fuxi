@@ -1,1 +1,1 @@
-from ._sdk import *
+from fuxi_core import *
