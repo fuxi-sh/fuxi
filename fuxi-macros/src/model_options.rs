@@ -7,11 +7,13 @@ use syn::{
 mod kw {
     syn::custom_keyword!(python);
     syn::custom_keyword!(abs);
+    syn::custom_keyword!(ext);
 }
 
 pub enum OptionType {
     Python(Ident),
     Abs(Ident),
+    Ext(Ident, Ident),
 }
 
 impl Parse for OptionType {
@@ -22,6 +24,11 @@ impl Parse for OptionType {
         } else if input.peek(kw::abs) {
             let ident = input.parse::<Ident>()?;
             Ok(Self::Abs(ident))
+        } else if input.peek(kw::ext) {
+            let ident = input.parse::<Ident>()?;
+            input.parse::<Token![=]>()?;
+            let ext = input.parse::<Ident>()?;
+            Ok(Self::Ext(ident, ext))
         } else {
             Err(input.error("无效属性"))
         }
@@ -32,6 +39,7 @@ impl Parse for OptionType {
 pub struct Options {
     pub python: Option<Ident>,
     pub abs: Option<Ident>,
+    pub ext: Option<(Ident, Ident)>,
 }
 
 impl Parse for Options {
@@ -50,6 +58,12 @@ impl Parse for Options {
                         return Err(Error::new_spanned(ident, "重复属性: abs"));
                     }
                     options.abs = Some(ident);
+                }
+                OptionType::Ext(ident, ext) => {
+                    if options.ext.is_some() {
+                        return Err(Error::new_spanned(ident, "重复属性: ext"));
+                    }
+                    options.ext = Some((ident, ext));
                 }
             }
         }

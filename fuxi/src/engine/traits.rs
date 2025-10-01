@@ -12,10 +12,6 @@ pub type SharedRuntime = Arc<dyn Runtime + Send + Sync>;
 pub type SharedStrategy = Arc<dyn Strategy + Send + Sync>;
 
 pub trait Runtime: Send + Sync {
-    fn mode(&self) -> Mode;
-
-    fn run(&self, context: Context) -> Result<()>;
-
     #[allow(clippy::too_many_arguments)]
     fn place_order(
         &self,

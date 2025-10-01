@@ -16,6 +16,8 @@ pub fn generate(attr: TokenStream, ast: ItemEnum) -> Result<TokenStream> {
 
     if let Some(ident) = options.abs {
         return Err(syn::Error::new_spanned(ident, "不支持抽象枚举类型"));
+    } else if let Some((ident, _)) = options.ext {
+        return Err(syn::Error::new_spanned(ident, "不支持扩展枚举类型"));
     }
 
     tokens.push(quote! {

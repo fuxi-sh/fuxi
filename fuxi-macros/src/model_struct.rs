@@ -65,15 +65,23 @@ fn generate_safe(options: &Options, ast: &ItemStruct) -> TokenStream {
     let mut tokens: Vec<TokenStream> = vec![];
 
     if options.python.is_some() {
+        let mut support_tokens = vec![];
+        support_tokens.push(quote! {
+            frozen,
+        });
         if options.abs.is_some() {
-            tokens.push(quote! {
-                #[::pyo3::pyclass(frozen, subclass)]
-            });
-        } else {
-            tokens.push(quote! {
-                #[::pyo3::pyclass(frozen)]
+            support_tokens.push(quote! {
+                subclass,
             });
         }
+        if let Some((_, ext)) = &options.ext {
+            support_tokens.push(quote! {
+                extends=#ext,
+            });
+        }
+        tokens.push(quote! {
+            #[::pyo3::pyclass(#(#support_tokens)*)]
+        });
     }
 
     tokens.push(quote! {

@@ -1,5 +1,4 @@
 use crate::{
-    engine::traits::SharedRuntime,
     helpers::constants::FMT_S,
     types::{
         alias::{Time, default_time},
@@ -7,7 +6,6 @@ use crate::{
         market::SymbolMap,
     },
 };
-use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
     Bound, pymethods,
@@ -15,9 +13,9 @@ use pyo3::{
 };
 use std::fmt::Arguments;
 
-#[model(python)]
+#[model(python, abs)]
 pub struct Context {
-    runtime: SharedRuntime,
+    mode: Mode,
     log_level: (LogLevel, LogLevel),
     pub time: Time,
     pub spot: Volume,
@@ -26,21 +24,19 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn run(runtime: SharedRuntime, log_level: (LogLevel, LogLevel)) -> Result<()> {
-        let fuxi = Self::from(ContextData {
-            runtime: runtime.clone(),
+    pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
+        Self::from(ContextData {
+            mode,
             log_level,
             time: default_time(),
             spot: Default::default(),
             swap: Default::default(),
             symbols: Default::default(),
-        });
-
-        runtime.run(fuxi.clone())?;
-
-        Ok(())
+        })
     }
+}
 
+impl Context {
     pub fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
             self.log_level().0
@@ -53,7 +49,7 @@ impl Context {
         crate::helpers::log::print(format_args!(
             "{} | {} | {} | {} | ==> {}\n",
             self.time().format(FMT_S),
-            match self.runtime().mode() {
+            match *self.mode() {
                 Mode::Backtest => "📊",
                 Mode::Sandbox => "🧪",
                 Mode::Mainnet => "🚀",
