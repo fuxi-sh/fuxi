@@ -10,8 +10,8 @@ use crate::{
     },
     types::{
         base::{
-            CandlePeriod, Codes, Coins, LogLevel, Market, OrderStatus, Pnl, RunMode, TradeAction,
-            TradeMethod, TradeSide, Volume,
+            Codes, Coins, Diretion, Interval, LogLevel, Market, Method, Mode, OrderStatus, Pnl,
+            Side, Volume,
         },
         order::Order,
         position::{Position, SidePosition},
@@ -27,13 +27,13 @@ use pyo3::{
 #[pymodule]
 fn _sdk(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<LogLevel>()?;
-    m.add_class::<RunMode>()?;
+    m.add_class::<Mode>()?;
     m.add_class::<Market>()?;
-    m.add_class::<TradeMethod>()?;
-    m.add_class::<TradeSide>()?;
-    m.add_class::<TradeAction>()?;
+    m.add_class::<Method>()?;
+    m.add_class::<Diretion>()?;
+    m.add_class::<Side>()?;
     m.add_class::<OrderStatus>()?;
-    m.add_class::<CandlePeriod>()?;
+    m.add_class::<Interval>()?;
     m.add_class::<Coins>()?;
     m.add_class::<Codes>()?;
     m.add_class::<Volume>()?;

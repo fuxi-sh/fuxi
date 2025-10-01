@@ -2,7 +2,7 @@ use crate::{
     engine::{context::Context, traits::Runtime},
     types::{
         alias::{Price, Size, Time},
-        base::{LogLevel, RunMode, SymbolCode, TradeAction, TradeMethod, TradeSide},
+        base::{Diretion, LogLevel, Method, Mode, Side, SymbolCode},
     },
 };
 use anyhow::{Result, anyhow, ensure};
@@ -29,8 +29,8 @@ pub struct Backtest {
 
 impl Runtime for Backtest {
     #[inline]
-    fn mode(&self) -> RunMode {
-        RunMode::Backtest
+    fn mode(&self) -> Mode {
+        Mode::Backtest
     }
 
     fn run(&self, fuxi: Context) -> Result<()> {
@@ -197,9 +197,9 @@ impl Runtime for Backtest {
         &self,
         fuxi: Context,
         code: SymbolCode,
-        method: TradeMethod,
-        side: TradeSide,
-        action: TradeAction,
+        method: Method,
+        side: Diretion,
+        action: Side,
         size: Size,
         price: Price,
     ) -> Result<String> {

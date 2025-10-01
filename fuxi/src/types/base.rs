@@ -11,7 +11,7 @@ pub enum LogLevel {
 }
 
 #[model(python)]
-pub enum RunMode {
+pub enum Mode {
     Backtest,
     Sandbox,
     Mainnet,
@@ -24,19 +24,19 @@ pub enum Market {
 }
 
 #[model(python)]
-pub enum TradeMethod {
+pub enum Method {
     Market,
     Limit,
 }
 
 #[model(python)]
-pub enum TradeSide {
+pub enum Diretion {
     Long,
     Short,
 }
 
 #[model(python)]
-pub enum TradeAction {
+pub enum Side {
     Buy,
     Sell,
 }
@@ -53,7 +53,7 @@ pub enum OrderStatus {
 }
 
 #[model(python)]
-pub enum CandlePeriod {
+pub enum Interval {
     Min,
     Min3,
     Min5,

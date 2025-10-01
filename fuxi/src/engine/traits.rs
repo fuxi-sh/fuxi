@@ -2,7 +2,7 @@ use crate::{
     engine::context::Context,
     types::{
         alias::{Price, Size},
-        base::{Codes, RunMode, TradeAction, TradeMethod, TradeSide},
+        base::{Codes, Diretion, Method, Mode, Side},
     },
 };
 use anyhow::Result;
@@ -12,7 +12,7 @@ pub type SharedRuntime = Arc<dyn Runtime + Send + Sync>;
 pub type SharedStrategy = Arc<dyn Strategy + Send + Sync>;
 
 pub trait Runtime: Send + Sync {
-    fn mode(&self) -> RunMode;
+    fn mode(&self) -> Mode;
 
     fn run(&self, context: Context) -> Result<()>;
 
@@ -21,9 +21,9 @@ pub trait Runtime: Send + Sync {
         &self,
         context: Context,
         code: Codes,
-        method: TradeMethod,
-        side: TradeSide,
-        action: TradeAction,
+        method: Method,
+        side: Diretion,
+        action: Side,
         size: Size,
         price: Price,
     ) -> Result<String>;

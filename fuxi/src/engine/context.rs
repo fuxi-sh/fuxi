@@ -3,7 +3,7 @@ use crate::{
     helpers::constants::FMT_S,
     types::{
         alias::{Time, default_time},
-        base::{LogLevel, RunMode, SymbolCode, Volume},
+        base::{LogLevel, Mode, SymbolCode, Volume},
         symbol::SymbolMap,
     },
 };
@@ -63,9 +63,9 @@ impl Context {
             "{} | {} | {} | {} | ==> {}\n",
             self.time().format(FMT_S),
             match self.runtime().mode() {
-                RunMode::Backtest => "回测",
-                RunMode::Sandbox => "沙盒",
-                RunMode::Mainnet => "实盘",
+                Mode::Backtest => "回测",
+                Mode::Sandbox => "沙盒",
+                Mode::Mainnet => "实盘",
             },
             if engine { "伏羲" } else { "策略" },
             match level {
