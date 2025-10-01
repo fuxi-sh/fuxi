@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Dict
 from .market import Symbol
 from .code import Codes
-from .base import Volume
+from .base import Mode, Volume
 from .alias import Time
 
 class Context(ABC):
+    mode: Mode
     time: Time
     spot: Volume
     swap: Volume

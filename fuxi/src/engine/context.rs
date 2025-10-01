@@ -18,12 +18,12 @@ use std::fmt::Arguments;
 
 #[model(python, abs)]
 pub struct Context {
-    mode: Mode,
-    log_level: (LogLevel, LogLevel),
+    pub mode: Mode,
     pub time: Time,
     pub spot: Volume,
     pub swap: Volume,
     pub symbols: SymbolMap,
+    log_level: (LogLevel, LogLevel),
 }
 
 impl Context {
