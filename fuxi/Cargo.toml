@@ -35,6 +35,8 @@ pyo3 = { workspace = true }
 humantime = { workspace = true }
 num-format = { workspace = true }
 polars = { workspace = true }
+arrow = { workspace = true }
+
 
 [build-dependencies]
 serde = { workspace = true }

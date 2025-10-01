@@ -68,3 +68,4 @@ polars = { version = "0.51", features = [
     "timezones",
     "dtype-full",
 ] }
+arrow = { version = "56", default-features = false, features = ["pyarrow"] }

@@ -1,4 +1,4 @@
-use crate::helpers::constants::TIME_OFFSET;
+use crate::helpers::constants::OFFSET;
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 use indexmap::IndexMap;
@@ -14,7 +14,7 @@ pub type Time = DateTime<Tz>;
 
 #[inline]
 pub fn default_time() -> Time {
-    DateTime::<Utc>::default().with_timezone(&TIME_OFFSET)
+    DateTime::<Utc>::default().with_timezone(&OFFSET)
 }
 
 pub type Safe<T> = Arc<RwLock<T>>;

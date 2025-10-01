@@ -1,6 +1,6 @@
 use crate::{
     engine::traits::SharedRuntime,
-    helpers::constants::TIME_FMT_S,
+    helpers::constants::FMT_S,
     types::{
         alias::{Time, default_time},
         base::{LogLevel, RunMode, SymbolCode, Volume},
@@ -61,7 +61,7 @@ impl Context {
         }
         crate::helpers::log::print(format_args!(
             "{} | {} | {} | {} | ==> {}\n",
-            self.time().format(TIME_FMT_S),
+            self.time().format(FMT_S),
             match self.runtime().mode() {
                 RunMode::Backtest => "回测",
                 RunMode::Sandbox => "沙盒",

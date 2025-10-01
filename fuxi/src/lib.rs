@@ -4,7 +4,7 @@ mod types;
 
 use crate::{
     helpers::{
-        constants::{TIME_FMT_MS, TIME_FMT_MS_CPT, TIME_FMT_S, TIME_FMT_S_CPT},
+        constants::{FMT_MS, FMT_MS_CPT, FMT_S, FMT_S_CPT},
         id::new as new_id,
         time::{millis_to_time, nanos_to_time, str_to_time, time_to_str},
     },
@@ -15,7 +15,7 @@ use crate::{
         },
         order::Order,
         position::{Position, SidePosition},
-        symbol::{FundingRate, Symbol},
+        symbol::{Candle, FundingRate, Symbol},
     },
 };
 use pyo3::{
@@ -41,13 +41,14 @@ fn _sdk(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Order>()?;
     m.add_class::<SidePosition>()?;
     m.add_class::<Position>()?;
+    m.add_class::<Candle>()?;
     m.add_class::<FundingRate>()?;
     m.add_class::<Symbol>()?;
 
-    m.add("TIME_FMT_MS", TIME_FMT_MS)?;
-    m.add("TIME_FMT_MS_CPT", TIME_FMT_MS_CPT)?;
-    m.add("TIME_FMT_S", TIME_FMT_S)?;
-    m.add("TIME_FMT_S_CPT", TIME_FMT_S_CPT)?;
+    m.add("FMT_MS", FMT_MS)?;
+    m.add("FMT_MS_CPT", FMT_MS_CPT)?;
+    m.add("FMT_S", FMT_S)?;
+    m.add("FMT_S_CPT", FMT_S_CPT)?;
 
     m.add_function(wrap_pyfunction!(millis_to_time, m)?)?;
     m.add_function(wrap_pyfunction!(nanos_to_time, m)?)?;

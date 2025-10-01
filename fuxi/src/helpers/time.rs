@@ -1,5 +1,5 @@
 use crate::{
-    helpers::constants::{TIME_FMT_MS, TIME_FMT_MS_CPT, TIME_OFFSET},
+    helpers::constants::{FMT_MS, FMT_MS_CPT, OFFSET},
     types::alias::Time,
 };
 use anyhow::{Result, anyhow, bail};
@@ -9,7 +9,7 @@ use pyo3::pyfunction;
 #[inline]
 #[pyfunction]
 pub fn millis_to_time(value: i64) -> Result<Time> {
-    TIME_OFFSET
+    OFFSET
         .timestamp_millis_opt(value)
         .single()
         .ok_or(anyhow!("无效的时间戳: {value}"))
@@ -18,7 +18,7 @@ pub fn millis_to_time(value: i64) -> Result<Time> {
 #[inline]
 #[pyfunction]
 pub fn nanos_to_time(value: i64) -> Time {
-    TIME_OFFSET.timestamp_nanos(value)
+    OFFSET.timestamp_nanos(value)
 }
 
 #[pyfunction]
@@ -34,7 +34,7 @@ pub fn str_to_time(value: &str) -> Result<Time> {
             23 => value.to_owned(),
             _ => bail!("无效时间字符串: {value}"),
         };
-        NaiveDateTime::parse_from_str(&ds, TIME_FMT_MS)?
+        NaiveDateTime::parse_from_str(&ds, FMT_MS)?
     } else {
         let ds = match len {
             4 => format!("{value}0101000000000"),
@@ -46,10 +46,10 @@ pub fn str_to_time(value: &str) -> Result<Time> {
             17 => value.to_owned(),
             _ => bail!("无效时间字符串: {value}"),
         };
-        NaiveDateTime::parse_from_str(&ds, TIME_FMT_MS_CPT)?
+        NaiveDateTime::parse_from_str(&ds, FMT_MS_CPT)?
     };
 
-    TIME_OFFSET
+    OFFSET
         .from_local_datetime(&naive)
         .single()
         .ok_or(anyhow!("无效时间字符串: {value}"))
@@ -63,5 +63,5 @@ pub fn time_to_str(value: Time, fmt: &str) -> String {
 #[allow(dead_code)]
 #[inline]
 pub fn now() -> Time {
-    Utc::now().with_timezone(&TIME_OFFSET)
+    Utc::now().with_timezone(&OFFSET)
 }
