@@ -1,6 +1,6 @@
 use crate::types::{
     alias::{Price, Size, Time},
-    base::{Codes, Diretion, Method, OrderStatus, Side},
+    base::{Codes, Direction, Method, OrderStatus, Side},
 };
 use fuxi_macros::{define_map, model};
 
@@ -9,7 +9,7 @@ pub struct Order {
     pub code: Codes,
     pub id: String,
     pub method: Method,
-    pub diretion: Diretion,
+    pub direction: Direction,
     pub side: Side,
     pub status: OrderStatus,
     pub size: Size,

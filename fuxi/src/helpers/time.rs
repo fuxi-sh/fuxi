@@ -4,10 +4,8 @@ use crate::{
 };
 use anyhow::{Result, anyhow, bail};
 use chrono::{NaiveDateTime, TimeZone, Utc};
-use pyo3::pyfunction;
 
 #[inline]
-#[pyfunction]
 pub fn millis_to_time(value: i64) -> Result<Time> {
     OFFSET
         .timestamp_millis_opt(value)
@@ -16,12 +14,10 @@ pub fn millis_to_time(value: i64) -> Result<Time> {
 }
 
 #[inline]
-#[pyfunction]
 pub fn nanos_to_time(value: i64) -> Time {
     OFFSET.timestamp_nanos(value)
 }
 
-#[pyfunction]
 pub fn str_to_time(value: &str) -> Result<Time> {
     let len = value.len();
     let naive = if value.contains("-") {
@@ -55,7 +51,6 @@ pub fn str_to_time(value: &str) -> Result<Time> {
         .ok_or(anyhow!("无效时间字符串: {value}"))
 }
 
-#[pyfunction]
 pub fn time_to_str(value: Time, fmt: &str) -> String {
     value.format(fmt).to_string()
 }

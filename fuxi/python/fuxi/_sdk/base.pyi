@@ -8,7 +8,7 @@ class LogLevel(Enum):
     Warn = auto()
     Error = auto()
 
-class RunMode(Enum):
+class Mode(Enum):
     Backtest = auto()
     Sandbox = auto()
     Mainnet = auto()
@@ -17,15 +17,15 @@ class Market(Enum):
     Spot = auto()
     Swap = auto()
 
-class TradeMethod(Enum):
+class Method(Enum):
     Market = auto()
     Limit = auto()
 
-class TradeSide(Enum):
+class Direction(Enum):
     Long = auto()
     Short = auto()
 
-class TradeAction(Enum):
+class Side(Enum):
     Buy = auto()
     Sell = auto()
 
@@ -38,7 +38,7 @@ class OrderStatus(Enum):
     Cancelling = auto()
     Cancelled = auto()
 
-class CandlePeriod(Enum):
+class Interval(Enum):
     Min = auto()
     Min3 = auto()
     Min5 = auto()

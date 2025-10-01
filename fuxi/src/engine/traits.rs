@@ -2,7 +2,7 @@ use crate::{
     engine::context::Context,
     types::{
         alias::{Price, Size},
-        base::{Codes, Diretion, Method, Mode, Side},
+        base::{Codes, Direction, Method, Mode, Side},
     },
 };
 use anyhow::Result;
@@ -18,7 +18,7 @@ pub trait Runtime: Send + Sync {
         context: Context,
         code: Codes,
         method: Method,
-        side: Diretion,
+        direction: Direction,
         action: Side,
         size: Size,
         price: Price,

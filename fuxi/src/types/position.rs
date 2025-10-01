@@ -1,6 +1,6 @@
 use crate::types::{
     alias::{Price, Size},
-    base::{Codes, Pnl, Diretion, Volume},
+    base::{Codes, Direction, Pnl, Volume},
     order::OrderMap,
 };
 use fuxi_macros::model;
@@ -8,17 +8,17 @@ use fuxi_macros::model;
 #[model(python)]
 pub struct SidePosition {
     pub code: Codes,
-    pub side: Diretion,
+    pub direction: Direction,
     pub size: Volume,
     pub price: Price,
     pub pnl: Pnl,
 }
 
 impl SidePosition {
-    pub fn new(code: Codes, side: Diretion) -> Self {
+    pub fn new(code: Codes, direction: Direction) -> Self {
         SidePositionData {
             code,
-            side,
+            direction,
             size: Default::default(),
             price: Default::default(),
             pnl: Default::default(),
@@ -44,8 +44,8 @@ impl Position {
             code,
             margin: Default::default(),
             pnl: Default::default(),
-            long: SidePosition::new(code, Diretion::Long),
-            short: SidePosition::new(code, Diretion::Short),
+            long: SidePosition::new(code, Direction::Long),
+            short: SidePosition::new(code, Direction::Short),
             lever,
             orders: Default::default(),
         }

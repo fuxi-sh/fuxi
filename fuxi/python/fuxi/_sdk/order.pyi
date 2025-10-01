@@ -1,14 +1,14 @@
 from typing import Optional
 from .alias import Price, Size, Time
-from .base import OrderStatus, TradeAction, TradeMethod, TradeSide
-from .code import SymbolCode
+from .base import Direction, Method, OrderStatus, Side
+from .code import Codes
 
 class Order:
-    code: SymbolCode
+    code: Codes
     id: str
-    method: TradeMethod
-    side: TradeSide
-    action: TradeAction
+    method: Method
+    direction: Direction
+    side: Side
     status: OrderStatus
     size: Size
     price: Price

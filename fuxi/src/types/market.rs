@@ -19,8 +19,8 @@ pub struct Candle {
 #[model(python)]
 pub struct FundingRate {
     pub code: Codes,
-    pub value: Size,
     pub time: Time,
+    pub rate: Size,
     pub next_time: Time,
     pub min: Size,
     pub max: Size,
@@ -31,8 +31,8 @@ impl FundingRate {
     pub fn new(code: Codes) -> Self {
         FundingRateData {
             code,
-            value: Default::default(),
             time: default_time(),
+            rate: Default::default(),
             next_time: default_time(),
             min: Default::default(),
             max: Default::default(),

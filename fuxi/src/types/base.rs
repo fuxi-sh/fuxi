@@ -30,7 +30,7 @@ pub enum Method {
 }
 
 #[model(python)]
-pub enum Diretion {
+pub enum Direction {
     Long,
     Short,
 }

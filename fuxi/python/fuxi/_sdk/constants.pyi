@@ -1,4 +1,0 @@
-TIME_FMT_MS: str
-TIME_FMT_MS_CPT: str
-TIME_FMT_S: str
-TIME_FMT_S_CPT: str

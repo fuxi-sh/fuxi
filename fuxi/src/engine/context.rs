@@ -6,9 +6,10 @@ use crate::{
         market::SymbolMap,
     },
 };
+use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
-    Bound, PyErr, PyResult,
+    Bound, PyResult,
     exceptions::PyNotImplementedError,
     pymethods,
     types::{PyTuple, PyTupleMethods},
@@ -149,6 +150,49 @@ impl Context {
                     .join(" ")
             ),
         );
+    }
+}
+
+#[pymethods]
+impl Context {
+    fn millis_to_time(&self, millis: i64) -> Result<Time> {
+        crate::helpers::time::millis_to_time(millis)
+    }
+
+    fn nanos_to_time(&self, nanos: i64) -> Time {
+        crate::helpers::time::nanos_to_time(nanos)
+    }
+
+    fn str_to_time(&self, s: &str) -> Result<Time> {
+        crate::helpers::time::str_to_time(s)
+    }
+
+    fn time_to_str(&self, t: Time, fmt: &str) -> String {
+        crate::helpers::time::time_to_str(t, fmt)
+    }
+
+    fn new_id(&self) -> String {
+        crate::helpers::id::new()
+    }
+
+    #[getter(FMT_MS)]
+    fn fmt_ms(&self) -> &'static str {
+        crate::helpers::constants::FMT_MS
+    }
+
+    #[getter(FMT_MS_CPT)]
+    fn fmt_ms_cpt(&self) -> &'static str {
+        crate::helpers::constants::FMT_MS_CPT
+    }
+
+    #[getter(FMT_S)]
+    fn fmt_s(&self) -> &'static str {
+        crate::helpers::constants::FMT_S
+    }
+
+    #[getter(FMT_S_CPT)]
+    fn fmt_s_cpt(&self) -> &'static str {
+        crate::helpers::constants::FMT_S_CPT
     }
 }
 

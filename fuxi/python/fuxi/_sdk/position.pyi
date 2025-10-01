@@ -1,18 +1,18 @@
 from typing import Dict
 from .order import Order
 from .alias import Price, Size
-from .base import Pnl, TradeSide, Volume
-from .code import SymbolCode
+from .base import Direction, Pnl, Volume
+from .code import Codes
 
 class SidePosition:
-    code: SymbolCode
-    side: TradeSide
+    code: Codes
+    direction: Direction
     size: Volume
     price: Price
     pnl: Pnl
 
 class Position:
-    code: SymbolCode
+    code: Codes
     margin: Volume
     pnl: Pnl
     long: SidePosition
