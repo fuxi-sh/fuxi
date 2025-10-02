@@ -65,18 +65,16 @@ impl Context {
 #[pymethods]
 impl Context {
     #[new]
-    fn new(_args: &Bound<'_, PyTuple>) -> Self {
+    #[pyo3(signature = (log_level=(LogLevel::Info, LogLevel::Info)))]
+    fn new(log_level: (LogLevel, LogLevel)) -> Self {
         Self::from(ContextData {
             runtime: None,
-            log_level: (LogLevel::Info, LogLevel::Info),
+            log_level,
             time: default_time(),
             spot: Default::default(),
             swap: Default::default(),
             symbols: Default::default(),
         })
-    }
-    fn with_log_level(&self, level: (LogLevel, LogLevel)) {
-        self.set_log_level(level);
     }
 }
 
