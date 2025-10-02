@@ -20,6 +20,8 @@ pub fn generate(attr: TokenStream, ast: ItemEnum) -> Result<TokenStream> {
         return Err(syn::Error::new_spanned(ident, "不支持扩展枚举类型"));
     }
 
+    let name = &ast.ident;
+
     tokens.push(quote! {
         #[derive(
             Debug,
@@ -38,6 +40,14 @@ pub fn generate(attr: TokenStream, ast: ItemEnum) -> Result<TokenStream> {
             ::serde::Deserialize,
         )]
         #ast
+
+        #[::pyo3::pymethods]
+        impl #name {
+            fn members(&self) -> Vec<#name> {
+                use strum::IntoEnumIterator;
+                Self::iter().collect::<Vec<_>>()
+            }
+        }
     });
 
     Ok(quote! {
