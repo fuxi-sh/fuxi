@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, List, Self
 from .base import Market
 from decimal import Decimal
 
@@ -376,6 +376,8 @@ class Coins(Enum):
     MHYPE = auto()
     FLOW = auto()
 
+    @staticmethod
+    def members() -> List[Self]: ...
     def id(self) -> str: ...
     def decimals(self) -> Decimal: ...
 
@@ -773,6 +775,8 @@ class Codes(Enum):
     HEMI_SWAP = auto()
     APEX_SWAP = auto()
 
+    @staticmethod
+    def members() -> List[Self]: ...
     def id(self) -> str: ...
     def market(self) -> Market: ...
     def is_spot(self) -> bool: ...

@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import List, Self
 from .alias import Size
 
 class LogLevel(Enum):
@@ -7,27 +8,39 @@ class LogLevel(Enum):
     Info = auto()
     Warn = auto()
     Error = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Mode(Enum):
     Backtest = auto()
     Sandbox = auto()
     Mainnet = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Market(Enum):
     Spot = auto()
     Swap = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Method(Enum):
     Market = auto()
     Limit = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Direction(Enum):
     Long = auto()
     Short = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Side(Enum):
     Buy = auto()
     Sell = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class OrderStatus(Enum):
     New = auto()
@@ -37,6 +50,8 @@ class OrderStatus(Enum):
     Completed = auto()
     Cancelling = auto()
     Cancelled = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Interval(Enum):
     Min = auto()
@@ -53,6 +68,8 @@ class Interval(Enum):
     Day3 = auto()
     Week = auto()
     Month = auto()
+    @staticmethod
+    def members() -> List[Self]: ...
 
 class Volume:
     total: Size

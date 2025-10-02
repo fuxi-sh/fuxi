@@ -43,7 +43,8 @@ pub fn generate(attr: TokenStream, ast: ItemEnum) -> Result<TokenStream> {
 
         #[::pyo3::pymethods]
         impl #name {
-            fn members(&self) -> Vec<#name> {
+            #[staticmethod]
+            fn members() -> Vec<#name> {
                 use strum::IntoEnumIterator;
                 Self::iter().collect::<Vec<_>>()
             }
