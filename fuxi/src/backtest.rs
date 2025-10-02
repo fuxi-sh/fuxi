@@ -195,11 +195,6 @@ impl Backtest {
                 df.rechunk_mut();
             }
 
-            let df = df.slice(
-                (*self.context().time() - *self.begin()).num_minutes(),
-                *self.history_size(),
-            );
-
             self.context()
                 .engine_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
 
