@@ -90,12 +90,20 @@ impl Backtest {
 
         Ok(backtest)
     }
+
+    #[pyo3(name = "run")]
+    fn _run(&self) -> Result<()> {
+        crate::helpers::log::init(Some(1024));
+        self.run()?;
+        crate::helpers::log::flush()?;
+        Ok(())
+    }
 }
 
 impl Runtime for Backtest {
     #[inline]
     fn mode(&self) -> Mode {
-        todo!()
+        Mode::Backtest
     }
 
     fn run(&self) -> Result<()> {
