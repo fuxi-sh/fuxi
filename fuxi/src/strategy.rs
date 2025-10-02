@@ -1,27 +1,24 @@
 use anyhow::Result;
-use pyo3::{
-    Bound, Py, PyAny, Python,
-    types::{PyAnyMethods, PyFunction},
-};
+use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
 use std::sync::Arc;
 
 pub struct Strategy {
-    on_start: Py<PyFunction>,
-    on_stop: Py<PyFunction>,
-    on_tick: Py<PyFunction>,
-    on_position: Py<PyFunction>,
-    on_order: Py<PyFunction>,
-    on_cash: Py<PyFunction>,
+    on_start: Py<PyAny>,
+    on_stop: Py<PyAny>,
+    on_tick: Py<PyAny>,
+    on_position: Py<PyAny>,
+    on_order: Py<PyAny>,
+    on_cash: Py<PyAny>,
 }
 
 impl Strategy {
     pub fn new(instance: &Bound<PyAny>) -> Result<Arc<Self>> {
-        let on_start = instance.getattr("on_start")?.extract()?;
-        let on_stop = instance.getattr("on_stop")?.extract()?;
-        let on_tick = instance.getattr("on_tick")?.extract()?;
-        let on_position = instance.getattr("on_position")?.extract()?;
-        let on_order = instance.getattr("on_order")?.extract()?;
-        let on_cash = instance.getattr("on_cash")?.extract()?;
+        let on_start = instance.getattr("on_start")?.unbind();
+        let on_stop = instance.getattr("on_stop")?.unbind();
+        let on_tick = instance.getattr("on_tick")?.unbind();
+        let on_position = instance.getattr("on_position")?.unbind();
+        let on_order = instance.getattr("on_order")?.unbind();
+        let on_cash = instance.getattr("on_cash")?.unbind();
 
         Ok(Arc::new(Self {
             on_start,
