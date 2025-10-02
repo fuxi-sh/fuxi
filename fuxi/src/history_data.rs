@@ -63,8 +63,8 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
             );
 
             let mut file = OpenOptions::new()
-                .write(true)
                 .create(true)
+                .write(true)
                 .truncate(true)
                 .open(save_path.as_path())
                 .await?;
@@ -85,10 +85,19 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                         .convert_time_zone(TimeZone::from_chrono(&chrono_tz::Asia::Shanghai)),
                 );
                 df = df.with_column(lit(true).alias("finished"));
-                let df = df.collect()?;
+                let mut df = df.collect()?;
+
+                let mut file = std::fs::OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .truncate(true)
+                    .open(save_path.as_path())?;
+
+                IpcWriter::new(&mut file).finish(&mut df)?;
 
                 anyhow::Ok(())
-            });
+            })
+            .await??;
 
             let elapsed = start_time.elapsed();
             context.engine_log(
