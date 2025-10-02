@@ -13,5 +13,6 @@ class Backtest:
         spot: Size = 1000,
         swap: Size = 1000,
         history_size: int = 5000,
+        sync_data: bool = False,
     ): ...
     def run(self): ...

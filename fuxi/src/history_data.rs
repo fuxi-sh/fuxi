@@ -8,7 +8,7 @@ use tokio::{fs::OpenOptions, io::AsyncWriteExt, time::Instant};
 const DOWNLOAD_PREFIX: &str = "https://raw.githubusercontent.com/FrequentHippos/freqtrade_hyperliquid_download-data/refs/heads/main/user_data/data/hyperliquid/";
 
 #[tokio::main(flavor = "current_thread")]
-pub async fn download(context: Context, codes: &[Codes]) -> Result<()> {
+pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<()> {
     let dir = std::env::current_dir()?.join("data");
     let spot_dir = dir.join("spot");
     let swap_dir = dir.join("swap");
@@ -19,6 +19,21 @@ pub async fn download(context: Context, codes: &[Codes]) -> Result<()> {
     for code in codes {
         let context = context.clone();
         let code = *code;
+
+        let save_path = match code.market() {
+            Market::Spot => spot_dir.join(format!(
+                "{}.feather",
+                code.code().replace("/", "_").replace(":", "_")
+            )),
+            Market::Swap => swap_dir.join(format!(
+                "{}.feather",
+                code.code().replace("/", "_").replace(":", "_")
+            )),
+        };
+        if !force && save_path.exists() {
+            continue;
+        }
+
         let download_path = format!(
             "{DOWNLOAD_PREFIX}{}",
             match code.market() {
@@ -32,16 +47,7 @@ pub async fn download(context: Context, codes: &[Codes]) -> Result<()> {
                 ),
             }
         );
-        let save_path = match code.market() {
-            Market::Spot => spot_dir.join(format!(
-                "{}.feather",
-                code.code().replace("/", "_").replace(":", "_")
-            )),
-            Market::Swap => swap_dir.join(format!(
-                "{}.feather",
-                code.code().replace("/", "_").replace(":", "_")
-            )),
-        };
+
         let handle = tokio::spawn(async move {
             let start_time = Instant::now();
 

@@ -5,7 +5,7 @@ use crate::{
     strategy::Strategy,
     types::{
         alias::{Price, Size, Time},
-        base::{Codes, Direction, LogLevel, Method, Mode, Side},
+        base::{Codes, Direction, Method, Mode, Side},
         market::Symbol,
     },
 };
@@ -13,7 +13,7 @@ use anyhow::{Result, ensure};
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
 use rust_decimal::{Decimal, dec};
-use std::{sync::Arc, time::Instant};
+use std::sync::Arc;
 
 #[model(python)]
 pub struct Backtest {
@@ -22,12 +22,14 @@ pub struct Backtest {
     begin: Time,
     end: Time,
     history_size: usize,
+    sync_data: bool,
 }
 
 #[pymethods]
 impl Backtest {
+    #[allow(clippy::too_many_arguments)]
     #[new]
-    #[pyo3(signature = (strategy, begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000))]
+    #[pyo3(signature = (strategy, begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000, sync_data=false))]
     fn new(
         strategy: &Bound<PyAny>,
         begin: &str,
@@ -36,6 +38,7 @@ impl Backtest {
         spot: Size,
         swap: Size,
         history_size: usize,
+        sync_data: bool,
     ) -> Result<Self> {
         ensure!(
             strategy.is_instance_of::<Context>(),
@@ -87,6 +90,7 @@ impl Backtest {
             begin,
             end,
             history_size,
+            sync_data,
         });
 
         context.set_runtime(Some(Box::new(backtest.clone())));
@@ -134,7 +138,7 @@ impl Runtime for Backtest {
             .cloned()
             .collect::<Vec<_>>();
 
-        history_data::download(self.context().clone(), &codes)?;
+        history_data::download(self.context().clone(), &codes, *self.sync_data())?;
 
         Ok(())
     }
