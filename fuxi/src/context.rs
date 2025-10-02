@@ -38,7 +38,7 @@ impl Context {
         }
 
         crate::helpers::log::print(format_args!(
-            "{} | {}{}{} | ==> {}\n",
+            "{} {}{}{} - {}\n",
             self.time().format(FMT_S),
             match self.runtime().as_ref().unwrap().mode() {
                 Mode::Backtest => "📊",
