@@ -1,10 +1,11 @@
 use crate::{
     context::Context,
+    history_data,
     runtime::Runtime,
     strategy::Strategy,
     types::{
         alias::{Price, Size, Time},
-        base::{Codes, Direction, Method, Mode, Side},
+        base::{Codes, Direction, LogLevel, Method, Mode, Side},
         market::Symbol,
     },
 };
@@ -12,7 +13,7 @@ use anyhow::{Result, ensure};
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
 use rust_decimal::{Decimal, dec};
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 #[model(python)]
 pub struct Backtest {
@@ -72,6 +73,8 @@ impl Backtest {
         context.swap().set_total(swap);
         context.swap().set_avail(swap);
 
+        ensure!(history_size > 0, "历史数据长度错误: {history_size}");
+
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;
         ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
@@ -107,7 +110,33 @@ impl Runtime for Backtest {
     }
 
     fn run(&self) -> Result<()> {
-        todo!()
+        use polars::prelude::*;
+
+        let dir = std::env::current_dir()?;
+
+        let time_range = date_range(
+            "time".into(),
+            (*self.begin() - chrono::Duration::minutes(*self.history_size() as i64)).naive_utc(),
+            self.end().naive_utc(),
+            Duration::parse("1m"),
+            ClosedWindow::Both,
+            TimeUnit::Nanoseconds,
+            Some(&chrono_tz::Asia::Shanghai),
+        )?
+        .into_column();
+        let time_range = DataFrame::new(vec![time_range])?.lazy();
+
+        let codes = self
+            .context()
+            .symbols()
+            .maps()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+
+        history_data::download(self.context().clone(), &codes)?;
+
+        Ok(())
     }
 
     fn place_order(

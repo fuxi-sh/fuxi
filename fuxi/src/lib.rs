@@ -2,6 +2,7 @@ mod backtest;
 mod context;
 mod engine;
 mod helpers;
+mod history_data;
 mod runtime;
 mod strategy;
 mod types;

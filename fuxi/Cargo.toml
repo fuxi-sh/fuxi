@@ -36,6 +36,7 @@ humantime = { workspace = true }
 num-format = { workspace = true }
 polars = { workspace = true }
 arrow = { workspace = true }
+reqwest = { workspace = true }
 
 
 [build-dependencies]
