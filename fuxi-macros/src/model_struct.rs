@@ -170,10 +170,6 @@ fn generate_safe(options: &Options, ast: &ItemStruct) -> TokenStream {
         tokens.push(quote! {
             #[::pyo3::pymethods]
             impl #name {
-                fn __repr__(&self) -> &str {
-                    stringify!(#name)
-                }
-
                 #(#py_field_get_tokens)*
             }
         });

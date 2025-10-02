@@ -57,10 +57,6 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
 
         #[::pyo3::pymethods]
         impl #name {
-            fn __repr__(&self) -> &str {
-                stringify!(#name)
-            }
-
             fn __getitem__(&self, key: #key) -> Option<#value> {
                 self.maps().get(&key).cloned()
             }
@@ -113,10 +109,6 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
 
         #[::pyo3::pymethods]
         impl #keys_iter_name {
-            fn __repr__(&self) -> &str {
-                stringify!(#keys_iter_name)
-            }
-
             fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
                 slf
             }
@@ -143,10 +135,6 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
 
         #[::pyo3::pymethods]
         impl #values_iter_name {
-            fn __repr__(&self) -> &str {
-                stringify!(#values_iter_name)
-            }
-
             fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
                 slf
             }
@@ -173,10 +161,6 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
 
         #[::pyo3::pymethods]
         impl #items_iter_name {
-            fn __repr__(&self) -> &str {
-                stringify!(#items_iter_name)
-            }
-
             fn __iter__(slf: ::pyo3::PyRef<'_, Self>) -> ::pyo3::PyRef<'_, Self> {
                 slf
             }
