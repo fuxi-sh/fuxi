@@ -5,7 +5,7 @@ use crate::{
     strategy::Strategy,
     types::{
         alias::{Price, Size, Time},
-        base::{Codes, Direction, Method, Mode, Side},
+        base::{Codes, Direction, Market, Method, Mode, Side},
         market::Symbol,
     },
 };
@@ -114,22 +114,6 @@ impl Runtime for Backtest {
     }
 
     fn run(&self) -> Result<()> {
-        use polars::prelude::*;
-
-        let dir = std::env::current_dir()?;
-
-        let time_range = date_range(
-            "time".into(),
-            (*self.begin() - chrono::Duration::minutes(*self.history_size() as i64)).naive_utc(),
-            self.end().naive_utc(),
-            Duration::parse("1m"),
-            ClosedWindow::Both,
-            TimeUnit::Nanoseconds,
-            Some(&chrono_tz::Asia::Shanghai),
-        )?
-        .into_column();
-        let time_range = DataFrame::new(vec![time_range])?.lazy();
-
         let codes = self
             .context()
             .symbols()
@@ -157,5 +141,42 @@ impl Runtime for Backtest {
 
     fn cancel_order(&self, code: Codes, id: &str) -> Result<()> {
         todo!()
+    }
+}
+
+impl Backtest {
+    fn load_data(&self, codes: &[Codes]) -> Result<()> {
+        use polars::prelude::*;
+
+        let dir = std::env::current_dir()?.join("data");
+        let spot_dir = dir.join("spot");
+        let swap_dir = dir.join("swap");
+
+        let time_range = date_range(
+            "time".into(),
+            (*self.begin() - chrono::Duration::minutes(*self.history_size() as i64)).naive_utc(),
+            self.end().naive_utc(),
+            Duration::parse("1m"),
+            ClosedWindow::Both,
+            TimeUnit::Nanoseconds,
+            Some(&chrono_tz::Asia::Shanghai),
+        )?
+        .into_column();
+        let time_range = DataFrame::new(vec![time_range])?.lazy();
+
+        for code in codes {
+            let file_path = match code.market() {
+                Market::Spot => spot_dir.join(format!(
+                    "{}.feather",
+                    code.code().replace("/", "_").replace(":", "_")
+                )),
+                Market::Swap => swap_dir.join(format!(
+                    "{}.feather",
+                    code.code().replace("/", "_").replace(":", "_")
+                )),
+            };
+        }
+
+        Ok(())
     }
 }

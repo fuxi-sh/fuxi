@@ -64,6 +64,7 @@ polars = { git = "https://github.com/pola-rs/polars.git", tag = "py-1.34.0-beta.
     "simd",
     "avx512",
     "ipc",
+    "ipc_streaming",
     "lazy",
     "timezones",
     "dtype-full",

@@ -3,6 +3,7 @@ use crate::{
     types::base::{Codes, LogLevel, Market},
 };
 use anyhow::{Result, ensure};
+use polars::prelude::*;
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, time::Instant};
 
 const DOWNLOAD_PREFIX: &str = "https://raw.githubusercontent.com/FrequentHippos/freqtrade_hyperliquid_download-data/refs/heads/main/user_data/data/hyperliquid/";
@@ -65,12 +66,29 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                 .write(true)
                 .create(true)
                 .truncate(true)
-                .open(save_path)
+                .open(save_path.as_path())
                 .await?;
-
             let bytes = response.bytes().await?;
             file.write_all(&bytes).await?;
             file.flush().await?;
+            drop(file);
+
+            tokio::task::spawn_blocking(move || {
+                let mut df = LazyFrame::scan_ipc(
+                    PlPathRef::from_local_path(save_path.as_path()).into_owned(),
+                    Default::default(),
+                )?;
+                df = df.rename(["date"], ["time"], true);
+                df = df.with_column(
+                    col("time")
+                        .dt()
+                        .convert_time_zone(TimeZone::from_chrono(&chrono_tz::Asia::Shanghai)),
+                );
+                df = df.with_column(lit(true).alias("finished"));
+                let df = df.collect()?;
+
+                anyhow::Ok(())
+            });
 
             let elapsed = start_time.elapsed();
             context.engine_log(
