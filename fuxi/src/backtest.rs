@@ -43,7 +43,7 @@ impl Backtest {
     ) -> Result<Self> {
         ensure!(
             strategy.is_instance_of::<Context>(),
-            "策略必须继承自`Context`"
+            "策略必须继承自: Context"
         );
         let context = strategy.extract::<Context>()?;
 
@@ -56,7 +56,7 @@ impl Backtest {
             );
             ensure!(
                 lever.fract().is_zero(),
-                "杠杆倍率不能有小数: 交易对={code}, 杠杆倍率={lever}",
+                "杠杆倍率不能有小数 交易对: {code}, 杠杆倍率: {lever}",
             );
 
             context
@@ -81,7 +81,10 @@ impl Backtest {
 
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;
-        ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
+        ensure!(
+            begin < end,
+            "开始时间不能大于结束时间: 开始时间: {begin}, 结束时间: {end}"
+        );
 
         context.set_time(begin);
 
@@ -195,8 +198,10 @@ impl Backtest {
                 df.rechunk_mut();
             }
 
-            self.context()
-                .engine_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
+            self.context().engine_log(
+                LogLevel::Debug,
+                format_args!("加载数据完成 交易对: {code}, {df}"),
+            );
 
             let history_df = df.slice(
                 (*self.context().time() - *self.begin()).num_minutes(),

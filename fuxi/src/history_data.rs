@@ -52,7 +52,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
         let handle = tokio::spawn(async move {
             let start_time = Instant::now();
 
-            context.engine_log(LogLevel::Debug, format_args!("{code} k线下载中..."));
+            context.engine_log(LogLevel::Debug, format_args!("k线下载中 {code}..."));
 
             let response = reqwest::get(download_path).await?;
 
@@ -111,7 +111,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
             context.engine_log(
                 LogLevel::Debug,
                 format_args!(
-                    "{code}: k线下载完成, 耗时={}",
+                    "k线下载完成 交易对: {code}, 耗时: {}",
                     humantime::format_duration(elapsed)
                 ),
             );
