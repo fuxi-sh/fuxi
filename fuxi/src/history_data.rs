@@ -52,13 +52,13 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
         let handle = tokio::spawn(async move {
             let start_time = Instant::now();
 
-            context.engine_log(LogLevel::Debug, format_args!("{code}: k线下载中..."));
+            context.engine_log(LogLevel::Debug, format_args!("{code} k线下载中..."));
 
             let response = reqwest::get(download_path).await?;
 
             ensure!(
                 response.status().is_success(),
-                "下载失败: 交易对={code}, 状态={}",
+                "下载失败 交易对: {code}, 状态: {}",
                 response.status()
             );
 
