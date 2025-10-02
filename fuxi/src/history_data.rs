@@ -62,15 +62,6 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                 response.status()
             );
 
-            let elapsed = start_time.elapsed();
-            context.engine_log(
-                LogLevel::Debug,
-                format_args!(
-                    "{code}: k线下载完成, 耗时={}",
-                    humantime::format_duration(elapsed)
-                ),
-            );
-
             let mut file = OpenOptions::new()
                 .create(true)
                 .write(true)
@@ -108,9 +99,19 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
             })
             .await??;
 
+            let elapsed = start_time.elapsed();
+            context.engine_log(
+                LogLevel::Debug,
+                format_args!(
+                    "{code}: k线下载完成, 耗时={}",
+                    humantime::format_duration(elapsed)
+                ),
+            );
+
             anyhow::Ok(())
         });
         handles.push(handle);
+        tokio::task::yield_now().await;
     }
 
     for handle in handles {
