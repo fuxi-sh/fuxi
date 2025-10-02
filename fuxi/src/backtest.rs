@@ -124,6 +124,8 @@ impl Runtime for Backtest {
 
         history_data::download(self.context().clone(), &codes, *self.sync_data())?;
 
+        self.load_data(&codes)?;
+
         Ok(())
     }
 
@@ -164,6 +166,8 @@ impl Backtest {
         .into_column();
         let time_range = DataFrame::new(vec![time_range])?.lazy();
 
+        let strategy = self.strategy().clone();
+
         for code in codes {
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
@@ -175,6 +179,20 @@ impl Backtest {
                     code.code().replace("/", "_").replace(":", "_")
                 )),
             };
+
+            let df = LazyFrame::scan_ipc(
+                PlPathRef::from_local_path(file_path.as_path()).into_owned(),
+                Default::default(),
+            )?;
+
+            let mut df = time_range
+                .clone()
+                .left_join(df, col("time"), col("time"))
+                .collect()?;
+
+            if df.should_rechunk() {
+                df.rechunk_mut();
+            }
         }
 
         Ok(())

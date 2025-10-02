@@ -85,7 +85,12 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                         .convert_time_zone(TimeZone::from_chrono(&chrono_tz::Asia::Shanghai)),
                 );
                 df = df.with_column(lit(true).alias("finished"));
+
                 let mut df = df.collect()?;
+
+                if df.should_rechunk() {
+                    df.rechunk_mut();
+                }
 
                 let mut file = std::fs::OpenOptions::new()
                     .create(true)
