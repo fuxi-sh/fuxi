@@ -1,39 +1,48 @@
 use crate::{
+    context::Context,
+    runtime::Runtime,
     strategy::Strategy,
     types::{
-        alias::{Size, Time},
-        base::{Codes, LogLevel, Mode},
+        alias::{Price, Size, Time},
+        base::{Codes, Direction, Method, Mode, Side},
         market::Symbol,
     },
 };
 use anyhow::{Result, ensure};
 use fuxi_macros::model;
-use pyo3::pymethods;
+use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
 use rust_decimal::{Decimal, dec};
+use std::sync::Arc;
 
-#[model(python, abs, ext=Strategy)]
+#[model(python)]
 pub struct Backtest {
+    context: Context,
+    strategy: Arc<Strategy>,
     begin: Time,
     end: Time,
     history_size: usize,
-    context: Strategy,
 }
 
 #[pymethods]
 impl Backtest {
     #[new]
-    #[pyo3(signature = (begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000, log_level=(LogLevel::Info, LogLevel::Info)))]
+    #[pyo3(signature = (strategy, begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000))]
     fn new(
+        strategy: &Bound<PyAny>,
         begin: &str,
         end: &str,
         symbols: Vec<(Codes, Size, Size, Size)>,
         spot: Size,
         swap: Size,
         history_size: usize,
-        log_level: (LogLevel, LogLevel),
-    ) -> Result<(Self, Strategy)> {
-        crate::helpers::log::init(Some(1024));
-        let context = Strategy::new(Mode::Backtest, log_level);
+    ) -> Result<Self> {
+        ensure!(
+            strategy.is_instance_of::<Context>(),
+            "策略必须继承自`Context`"
+        );
+        let context = strategy.extract::<Context>()?;
+
+        let strategy = Strategy::new(strategy)?;
 
         for (code, taker, maker, lever) in symbols {
             ensure!(
@@ -70,11 +79,42 @@ impl Backtest {
         context.set_time(begin);
 
         let backtest = Backtest::from(BacktestData {
+            context: context.clone(),
+            strategy,
             begin,
             end,
             history_size,
-            context: context.clone(),
         });
-        Ok((backtest, context))
+
+        context.set_runtime(Some(Box::new(backtest.clone())));
+
+        Ok(backtest)
+    }
+}
+
+impl Runtime for Backtest {
+    #[inline]
+    fn mode(&self) -> Mode {
+        todo!()
+    }
+
+    fn run(&self) -> Result<()> {
+        todo!()
+    }
+
+    fn place_order(
+        &self,
+        code: Codes,
+        method: Method,
+        direction: Direction,
+        side: Side,
+        size: Size,
+        price: Price,
+    ) -> Result<String> {
+        todo!()
+    }
+
+    fn cancel_order(&self, code: Codes, id: &str) -> Result<()> {
+        todo!()
     }
 }
