@@ -1,12 +1,12 @@
 mod backtest;
-mod context;
 mod engine;
 mod helpers;
+mod strategy;
 mod types;
 
 use crate::{
     backtest::Backtest,
-    context::Context,
+    strategy::Strategy,
     types::{
         base::{
             Codes, Coins, Direction, Interval, LogLevel, Market, Method, Mode, OrderStatus, Pnl,
@@ -42,7 +42,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Candle>()?;
     m.add_class::<FundingRate>()?;
     m.add_class::<Symbol>()?;
-    m.add_class::<Context>()?;
+    m.add_class::<Strategy>()?;
     m.add_class::<Backtest>()?;
     Ok(())
 }

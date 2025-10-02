@@ -9,15 +9,13 @@ use crate::{
 use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
-    Bound, PyResult,
-    exceptions::PyNotImplementedError,
-    pymethods,
+    Bound, PyResult, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
 use std::fmt::Arguments;
 
 #[model(python, abs)]
-pub struct Context {
+pub struct Strategy {
     pub mode: Mode,
     pub time: Time,
     pub spot: Volume,
@@ -26,9 +24,9 @@ pub struct Context {
     log_level: (LogLevel, LogLevel),
 }
 
-impl Context {
+impl Strategy {
     pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
-        Self::from(ContextData {
+        Self::from(StrategyData {
             mode,
             log_level,
             time: default_time(),
@@ -39,7 +37,7 @@ impl Context {
     }
 }
 
-impl Context {
+impl Strategy {
     pub fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
             self.log_level().0
@@ -76,7 +74,7 @@ impl Context {
 }
 
 #[pymethods]
-impl Context {
+impl Strategy {
     #[pyo3(signature = (*args))]
     fn trace(&self, args: &Bound<'_, PyTuple>) {
         self.log(
@@ -154,7 +152,7 @@ impl Context {
 }
 
 #[pymethods]
-impl Context {
+impl Strategy {
     fn millis_to_time(&self, millis: i64) -> Result<Time> {
         crate::helpers::time::millis_to_time(millis)
     }
@@ -197,11 +195,7 @@ impl Context {
 }
 
 #[pymethods]
-impl Context {
-    fn launcher(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`launcher`方法"))
-    }
-
+impl Strategy {
     fn on_start(&self) -> PyResult<()> {
         Ok(())
     }

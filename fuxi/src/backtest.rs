@@ -1,5 +1,5 @@
 use crate::{
-    context::Context,
+    strategy::Strategy,
     types::{
         alias::{Size, Time},
         base::{Codes, LogLevel, Mode},
@@ -11,12 +11,12 @@ use fuxi_macros::model;
 use pyo3::pymethods;
 use rust_decimal::{Decimal, dec};
 
-#[model(python, abs, ext=Context)]
+#[model(python, abs, ext=Strategy)]
 pub struct Backtest {
     begin: Time,
     end: Time,
     history_size: usize,
-    context: Context,
+    context: Strategy,
 }
 
 #[pymethods]
@@ -31,9 +31,9 @@ impl Backtest {
         swap: Size,
         history_size: usize,
         log_level: (LogLevel, LogLevel),
-    ) -> Result<(Self, Context)> {
+    ) -> Result<(Self, Strategy)> {
         crate::helpers::log::init(Some(1024));
-        let context = Context::new(Mode::Backtest, log_level);
+        let context = Strategy::new(Mode::Backtest, log_level);
 
         for (code, taker, maker, lever) in symbols {
             ensure!(
