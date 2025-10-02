@@ -65,7 +65,7 @@ impl Context {
 #[pymethods]
 impl Context {
     #[new]
-    fn new() -> Self {
+    fn new(_args: &Bound<'_, PyTuple>) -> Self {
         Self::from(ContextData {
             runtime: None,
             log_level: (LogLevel::Info, LogLevel::Info),
