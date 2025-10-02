@@ -5,7 +5,7 @@ use crate::{
     strategy::Strategy,
     types::{
         alias::{Price, Size, Time},
-        base::{Codes, Direction, Market, Method, Mode, Side},
+        base::{Codes, Direction, LogLevel, Market, Method, Mode, Side},
         market::Symbol,
     },
 };
@@ -193,6 +193,26 @@ impl Backtest {
             if df.should_rechunk() {
                 df.rechunk_mut();
             }
+
+            let df = df.slice(
+                (*self.context().time() - *self.begin()).num_minutes(),
+                *self.history_size(),
+            );
+
+            self.context()
+                .engine_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
+
+            let history_df = df.slice(
+                (*self.context().time() - *self.begin()).num_minutes(),
+                *self.history_size(),
+            );
+
+            self.context()
+                .symbols()
+                .maps()
+                .get(code)
+                .unwrap()
+                .set_candles(df);
         }
 
         Ok(())
