@@ -73,6 +73,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
             file.flush().await?;
             drop(file);
 
+            let _context = context.clone();
             tokio::task::spawn_blocking(move || {
                 let mut df = LazyFrame::scan_ipc(
                     PlPathRef::from_local_path(save_path.as_path()).into_owned(),
@@ -91,6 +92,8 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                 if df.should_rechunk() {
                     df.rechunk_mut();
                 }
+
+                _context.engine_log(LogLevel::Debug, format_args!("{code}: {df}"));
 
                 let mut file = std::fs::OpenOptions::new()
                     .create(true)
