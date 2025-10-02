@@ -28,7 +28,6 @@ pub struct Context {
 
 impl Context {
     pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
-        crate::helpers::log::init(Some(1024));
         Self::from(ContextData {
             mode,
             log_level,

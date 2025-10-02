@@ -32,6 +32,7 @@ impl Backtest {
         history_size: usize,
         log_level: (LogLevel, LogLevel),
     ) -> Result<(Self, Context)> {
+        crate::helpers::log::init(Some(1024));
         let context = Context::new(Mode::Backtest, log_level);
 
         for (code, taker, maker, lever) in symbols {
