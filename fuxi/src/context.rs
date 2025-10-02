@@ -1,5 +1,5 @@
 use crate::{
-    helpers::constants::FMT_S,
+    helpers::constants::{FMT_STY_1, FMT_STY_2},
     runtime::Runtime,
     types::{
         alias::{Time, default_time},
@@ -37,10 +37,15 @@ impl Context {
             return;
         }
 
+        let mode = self.runtime().as_ref().unwrap().mode();
+
         crate::helpers::log::print(format_args!(
             "{} {}{}{} - {}\n",
-            self.time().format(FMT_S),
-            match self.runtime().as_ref().unwrap().mode() {
+            self.time().format(match mode {
+                Mode::Backtest => FMT_STY_1,
+                _ => FMT_STY_2,
+            }),
+            match mode {
                 Mode::Backtest => "📊",
                 Mode::Sandbox => "🧪",
                 Mode::Mainnet => "🚀",
