@@ -35,7 +35,7 @@ pyo3 = { workspace = true }
 humantime = { workspace = true }
 num-format = { workspace = true }
 polars = { workspace = true }
-arrow = { workspace = true }
+pyo3-polars = { workspace = true }
 reqwest = { workspace = true }
 
 

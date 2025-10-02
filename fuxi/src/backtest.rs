@@ -12,6 +12,7 @@ use crate::{
 use anyhow::{Result, ensure};
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
+use pyo3_polars::PyDataFrame;
 use rust_decimal::{Decimal, dec};
 use std::sync::Arc;
 
@@ -206,6 +207,8 @@ impl Backtest {
                 (*self.context().time() - *self.begin()).num_minutes(),
                 *self.history_size(),
             );
+
+            strategy.on_history_candle(*code, PyDataFrame(history_df))?;
 
             self.context()
                 .symbols()

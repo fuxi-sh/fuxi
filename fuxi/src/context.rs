@@ -3,7 +3,7 @@ use crate::{
     runtime::Runtime,
     types::{
         alias::{Time, default_time},
-        base::{LogLevel, Mode, Volume},
+        base::{Codes, LogLevel, Mode, Volume},
         market::SymbolMap,
     },
 };
@@ -13,6 +13,7 @@ use pyo3::{
     Bound, PyResult, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
+use pyo3_polars::PyDataFrame;
 use std::fmt::Arguments;
 
 #[model(python, abs)]
@@ -206,6 +207,11 @@ impl Context {
     }
 
     fn on_stop(&self) -> PyResult<()> {
+        Ok(())
+    }
+
+    #[allow(unused_variables)]
+    fn on_history_candle(&self, code: Codes, candles: PyDataFrame) -> PyResult<()> {
         Ok(())
     }
 
