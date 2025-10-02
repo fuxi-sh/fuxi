@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import List, Self
+from typing import List
 from .alias import Size
 
 class LogLevel(Enum):
@@ -9,38 +9,38 @@ class LogLevel(Enum):
     Warn = auto()
     Error = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[LogLevel]: ...
 
 class Mode(Enum):
     Backtest = auto()
     Sandbox = auto()
     Mainnet = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Mode]: ...
 
 class Market(Enum):
     Spot = auto()
     Swap = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Market]: ...
 
 class Method(Enum):
     Market = auto()
     Limit = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Method]: ...
 
 class Direction(Enum):
     Long = auto()
     Short = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Direction]: ...
 
 class Side(Enum):
     Buy = auto()
     Sell = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Side]: ...
 
 class OrderStatus(Enum):
     New = auto()
@@ -51,7 +51,7 @@ class OrderStatus(Enum):
     Cancelling = auto()
     Cancelled = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[OrderStatus]: ...
 
 class Interval(Enum):
     Min = auto()
@@ -69,7 +69,7 @@ class Interval(Enum):
     Week = auto()
     Month = auto()
     @staticmethod
-    def members() -> List[Self]: ...
+    def members() -> List[Interval]: ...
 
 class Volume:
     total: Size
