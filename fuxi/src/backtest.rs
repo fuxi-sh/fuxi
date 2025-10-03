@@ -129,6 +129,9 @@ impl Runtime for Backtest {
 
         while now < end {
             self.context().set_time(now);
+
+            strategy.on_candle()?;
+
             now += Duration::minutes(1);
         }
 

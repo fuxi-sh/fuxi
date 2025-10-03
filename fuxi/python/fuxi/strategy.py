@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Optional
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel
-from polars import DataFrame
+import polars as pl
 from datetime import datetime
 
 
@@ -17,11 +17,11 @@ class AbsStrategy(ABC):
         pass
 
     @abstractmethod
-    def on_history_candle(self, code: Codes, candles: DataFrame):
+    def on_history_candle(self, code: Codes, candles: pl.DataFrame):
         pass
 
     @abstractmethod
-    def on_candle(self, code: Codes, candles: DataFrame):
+    def on_candle(self, code: Codes, candles: pl.DataFrame):
         pass
 
     @abstractmethod
@@ -99,17 +99,33 @@ class AbsStrategy(ABC):
 
 
 class Strategy(AbsStrategy):
+    _candles: Dict[Codes, pl.DataFrame]
+
+    def __init__(self):
+        self._candles = {}
+
     def on_start(self):
         pass
 
     def on_stop(self):
         pass
 
-    def on_history_candle(self, code: Codes, candles: DataFrame):
-        pass
+    def on_history_candle(self, code: Codes, candles: pl.DataFrame):
+        self._candles[code] = candles.rechunk()
 
-    def on_candle(self, code: Codes, candles: DataFrame):
-        pass
+    def on_candle(self, code: Codes, candles: pl.DataFrame):
+        self._candles[code] = (
+            pl.concat(
+                [self._candles[code], candles],
+                how="horizontal",
+            )
+            .unique(
+                subset=["time"],
+                keep="last",
+                maintain_order=True,
+            )
+            .rechunk()
+        )
 
     def on_position(self):
         pass
@@ -119,3 +135,9 @@ class Strategy(AbsStrategy):
 
     def on_cash(self):
         pass
+
+    def get_candles(self, code: Codes) -> pl.DataFrame:
+        if self.mode == Mode.Backtest:
+            return self._candles[code].filter(pl.col("time") < self.time)
+        else:
+            return self._candles[code]
