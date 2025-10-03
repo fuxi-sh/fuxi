@@ -151,7 +151,7 @@ impl Runtime for Backtest {
 }
 
 impl Backtest {
-    fn load_candles(&self, codes: &[Codes]) -> Result<Map<Codes, Vec<Option<Candle>>>> {
+    fn load_candles(&self, codes: &[Codes]) -> Result<Map<Codes, Vec<Candle>>> {
         use polars::prelude::*;
 
         let dir = std::env::current_dir()?.join("data");
@@ -160,21 +160,8 @@ impl Backtest {
 
         let mut code_candles = Map::new();
 
-        let time_range = date_range(
-            "time".into(),
-            (*self.begin() - chrono::Duration::minutes(*self.history_size() as i64)).naive_utc(),
-            self.end().naive_utc(),
-            Duration::parse("1m"),
-            ClosedWindow::Both,
-            TimeUnit::Nanoseconds,
-            Some(&chrono_tz::Asia::Shanghai),
-        )?
-        .into_column();
-        let data_len = time_range.len();
-        let time_range = DataFrame::new(vec![time_range])?.lazy();
-
         for code in codes {
-            let mut candles = Vec::with_capacity(data_len);
+            let mut candles = vec![];
 
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
@@ -190,12 +177,8 @@ impl Backtest {
             let df = LazyFrame::scan_ipc(
                 PlPathRef::from_local_path(file_path.as_path()).into_owned(),
                 Default::default(),
-            )?;
-
-            let df = time_range
-                .clone()
-                .left_join(df, col("time"), col("time"))
-                .collect()?;
+            )?
+            .collect()?;
 
             let time_col = df.column("time")?.datetime()?;
             let open_col = df.column("open")?.f64()?;
@@ -205,18 +188,17 @@ impl Backtest {
             let volume_col = df.column("volume")?.f64()?;
 
             for index in 0..df.height() {
-                let time = time_col.get_any_value(index)?.extract::<i64>();
-                if time.is_none() {
-                    candles.push(None);
-                    continue;
-                }
-                let time = crate::helpers::time::nanos_to_time(time.unwrap());
+                let time = time_col
+                    .get_any_value(index)?
+                    .extract::<i64>()
+                    .map(crate::helpers::time::nanos_to_time)
+                    .ok_or(anyhow::anyhow!("无效时间戳"))?;
                 let open = open_col.get(index).unwrap_or(0.);
                 let high = high_col.get(index).unwrap_or(0.);
                 let low = low_col.get(index).unwrap_or(0.);
                 let close = close_col.get(index).unwrap_or(0.);
                 let volume = volume_col.get(index).unwrap_or(0.);
-                candles.push(Some(
+                candles.push(
                     CandleData {
                         code: *code,
                         time,
@@ -227,7 +209,7 @@ impl Backtest {
                         volume,
                     }
                     .into(),
-                ));
+                );
             }
 
             self.context()

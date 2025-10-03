@@ -2,6 +2,8 @@ use anyhow::Result;
 use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
 use std::sync::Arc;
 
+use crate::types::{alias::Map, base::Codes, market::Candle};
+
 pub struct Strategy {
     on_start: Py<PyAny>,
     on_stop: Py<PyAny>,
@@ -45,8 +47,8 @@ impl Strategy {
     }
 
     #[inline]
-    pub fn on_history_tick(&self) -> Result<()> {
-        Python::attach(|py| self.on_history_tick.call0(py))?;
+    pub fn on_history_tick(&self, candles: Map<Codes, Vec<Candle>>) -> Result<()> {
+        Python::attach(|py| self.on_history_tick.call1(py, (candles,)))?;
         Ok(())
     }
     #[inline]
