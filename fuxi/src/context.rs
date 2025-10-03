@@ -2,7 +2,7 @@ use crate::{
     runtime::Runtime,
     types::{
         alias::{Time, default_time},
-        base::{Codes, LogLevel, Mode, Volume},
+        base::{LogLevel, Mode, Volume},
         market::SymbolMap,
     },
 };
@@ -14,7 +14,6 @@ use pyo3::{
     pymethods,
     types::{PyTuple, PyTupleMethods},
 };
-use pyo3_polars::PyDataFrame;
 use std::fmt::Arguments;
 
 #[model(python, abs)]
