@@ -1,11 +1,13 @@
 from abc import ABC
 from typing import Dict
+from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 import polars as pl
 from datetime import datetime, timedelta
 
 
 class Strategy(ABC):
+    candles: Dict[Codes, DataFrame]
 
     def __init__(self):
         self._candles = {}
@@ -24,15 +26,22 @@ class Strategy(ABC):
 
     def _on_history_candle(self, code: Codes, candles: pl.DataFrame):
         if self.mode == Mode.Backtest:
-            times = pl.datetime_range(
-                self._backtest.begin - timedelta(minutes=self._backtest.history_size),
-                self._backtest.end,
-                interval="1m",
-                closed="both",
-                time_unit="ns",
-                time_zone="Asia/Shanghai",
-            )
-
+            self._candles[code] = (
+                pl.select(
+                    pl.datetime_range(
+                        self._backtest.begin - timedelta(minutes=self._backtest.history_size),
+                        self._backtest.end,
+                        interval="1m",
+                        closed="both",
+                        time_unit="ns",
+                        time_zone="Asia/Shanghai",
+                    ).alias("time")
+                )
+                .lazy()
+                .join(candles.lazy(), on="time", how="left")
+                .collect()
+            ).rechunk()
+        else:
             self._candles[code] = candles.rechunk()
 
     def _on_candle(self, code: Codes, candles: pl.DataFrame):
@@ -118,9 +127,3 @@ class Strategy(ABC):
 
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
-
-    def get_candles(self, code: Codes) -> pl.DataFrame:
-        if self.mode == Mode.Backtest:
-            return self._candles[code].filter(pl.col("time") < self.time)
-        else:
-            return self._candles[code]
