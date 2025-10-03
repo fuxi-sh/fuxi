@@ -4,9 +4,9 @@ use crate::{
     runtime::Runtime,
     strategy::Strategy,
     types::{
-        alias::{Map, Price, Size, Time},
+        alias::{Price, Size, Time},
         base::{Codes, Direction, LogLevel, Market, Method, Side},
-        market::{Candle, CandleData, Symbol},
+        market::Symbol,
     },
 };
 use anyhow::{Result, ensure};
@@ -41,10 +41,9 @@ impl Backtest {
         history_size: usize,
         force_sync_data: bool,
     ) -> Result<Self> {
-        let context = Context::default();
-
         let strategy = Strategy::new(strategy)?;
-        strategy.on_inject_context(context.clone())?;
+
+        let context = Context::default();
 
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;
@@ -82,7 +81,7 @@ impl Backtest {
 
         let backtest = Backtest::from(BacktestData {
             context: context.clone(),
-            strategy,
+            strategy: strategy.clone(),
             begin,
             end,
             history_size,
@@ -93,11 +92,12 @@ impl Backtest {
             .context()
             .set_runtime(Some(Box::new(backtest.clone())));
 
+        strategy.on_inject_context(context.clone())?;
+
         Ok(backtest)
     }
 
-    #[pyo3(name = "run")]
-    fn _run(&self) -> Result<()> {
+    fn launche(&self) -> Result<()> {
         crate::helpers::log::init(Some(1024));
         self.run()?;
         crate::helpers::log::flush()?;
@@ -148,18 +148,14 @@ impl Runtime for Backtest {
 }
 
 impl Backtest {
-    fn load_candles(&self, codes: &[Codes]) -> Result<Map<Codes, Vec<Candle>>> {
+    fn load_candles(&self, codes: &[Codes]) -> Result<()> {
         use polars::prelude::*;
 
         let dir = std::env::current_dir()?.join("data");
         let spot_dir = dir.join("spot");
         let swap_dir = dir.join("swap");
 
-        let mut code_candles = Map::new();
-
         for code in codes {
-            let mut candles = vec![];
-
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
                     "{}.feather",
@@ -177,44 +173,17 @@ impl Backtest {
             )?
             .collect()?;
 
-            let time_col = df.column("time")?.datetime()?;
-            let open_col = df.column("open")?.f64()?;
-            let high_col = df.column("high")?.f64()?;
-            let low_col = df.column("low")?.f64()?;
-            let close_col = df.column("close")?.f64()?;
-            let volume_col = df.column("volume")?.f64()?;
-
-            for index in 0..df.height() {
-                let time = time_col
-                    .get_any_value(index)?
-                    .extract::<i64>()
-                    .map(crate::helpers::time::nanos_to_time)
-                    .ok_or(anyhow::anyhow!("无效时间戳"))?;
-                let open = open_col.get(index).unwrap_or(0.);
-                let high = high_col.get(index).unwrap_or(0.);
-                let low = low_col.get(index).unwrap_or(0.);
-                let close = close_col.get(index).unwrap_or(0.);
-                let volume = volume_col.get(index).unwrap_or(0.);
-                candles.push(
-                    CandleData {
-                        code: *code,
-                        time,
-                        open,
-                        high,
-                        low,
-                        close,
-                        volume,
-                    }
-                    .into(),
-                );
-            }
-
             self.context()
                 .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
 
-            code_candles.insert(*code, candles);
+            self.context()
+                .symbols()
+                .maps()
+                .get(code)
+                .unwrap()
+                .set_candles(df);
         }
 
-        Ok(code_candles)
+        Ok(())
     }
 }
