@@ -1,5 +1,5 @@
-from abc import ABC
-from typing import Dict, List
+from abc import ABC, abstractmethod
+from typing import Dict
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 from .indicator import Indicator
@@ -9,8 +9,10 @@ from datetime import datetime, timedelta
 
 
 class Strategy(ABC):
+    _context: Context
+    _backtest: Backtest
     _candles: Dict[Codes, DataFrame]
-    _candle_indicators: Dict[Codes, List[Indicator]]
+    _candle_indicators: Dict[Codes, Dict[str, Indicator]]
 
     def __init__(self):
         self._candles = {}
@@ -66,7 +68,7 @@ class Strategy(ABC):
         self._calculate_candle_indicators(code, candles)
 
     def _on_timer(self):
-        pass
+        self.on_timer()
 
     def _on_position(self):
         pass
@@ -135,13 +137,27 @@ class Strategy(ABC):
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
 
-    def add_indicator(self, code: Codes, indicator: Indicator):
+    @abstractmethod
+    def on_timer(self): ...
+
+    def add_candle_indicator(self, code: Codes, indicator: Indicator):
         if code not in self._candle_indicators:
-            self._candle_indicators[code] = []
-        self._candle_indicators[code].append(indicator)
+            self._candle_indicators[code] = {}
+        self._candle_indicators[code][indicator.name] = indicator
 
     def _calculate_candle_indicators(self, code: Codes, candles: DataFrame):
         if code not in self._candle_indicators:
             return
-        for indicator in self._candle_indicators[code]:
-            indicator._on_data(candles)
+        for name in self._candle_indicators[code]:
+            self._candle_indicators[code][name]._on_data(candles)
+
+    def get_candle_indicator(self, code: Codes, name: str) -> DataFrame:
+        if code not in self._candle_indicators:
+            return None
+        if name not in self._candle_indicators[code]:
+            return None
+        df = self._candle_indicators[code][name]._indicator
+        if self.mode == Mode.Backtest:
+            return df.slice(0, ((self.time - self._backtest.begin).seconds // 60))
+        else:
+            return df

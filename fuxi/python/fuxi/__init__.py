@@ -1,5 +1,5 @@
 from ._core import *
-from .indicator import Indicator
+from .indicator import Indicator, SMA, EMA, MACD
 from .strategy import Strategy
 from typing import Tuple, Dict, Any, List, Optional
 import polars as pl

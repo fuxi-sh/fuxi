@@ -14,7 +14,7 @@ class Indicator(ABC):
     def on_calculate(self, data: DataFrame) -> DataFrame: ...
 
     def _on_data(self, data: DataFrame):
-        self._indicator = self.on_calculate(data)
+        self._indicator = self.on_calculate(data).rechunk()
 
 
 class SMA(Indicator):
