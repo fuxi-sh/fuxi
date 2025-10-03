@@ -34,42 +34,42 @@ impl Strategy {
     }
     #[inline]
     pub fn on_start(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_start.call0(py))?;
+        Python::attach(|py| self.on_start.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_stop(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_stop.call0(py))?;
+        Python::attach(|py| self.on_stop.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_history_tick(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_history_tick.call0(py))?;
+        Python::attach(|py| self.on_history_tick.call0(py))?;
         Ok(())
     }
     #[inline]
     pub fn on_tick(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_tick.call0(py))?;
+        Python::attach(|py| self.on_tick.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_position(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_position.call0(py))?;
+        Python::attach(|py| self.on_position.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_order(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_order.call0(py))?;
+        Python::attach(|py| self.on_order.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_cash(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_cash.call0(py))?;
+        Python::attach(|py| self.on_cash.call0(py))?;
         Ok(())
     }
 }
