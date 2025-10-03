@@ -25,19 +25,21 @@ pub struct Context {
     log_level: (LogLevel, LogLevel),
 }
 
-impl Context {
-    pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
+impl Default for Context {
+    fn default() -> Self {
         Self::from(ContextData {
-            mode,
+            mode: Mode::Backtest,
             runtime: None,
-            log_level,
+            log_level: (LogLevel::Info, LogLevel::Info),
             time: default_time(),
             spot: Default::default(),
             swap: Default::default(),
             symbols: Default::default(),
         })
     }
+}
 
+impl Context {
     fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
             self.log_level().0

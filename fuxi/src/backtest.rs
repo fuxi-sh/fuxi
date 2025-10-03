@@ -43,7 +43,7 @@ impl Backtest {
     ) -> Result<Self> {
         let strategy = Strategy::new(strategy)?;
 
-        let context = Context::new(Mode::Backtest, (LogLevel::Info, LogLevel::Info));
+        let context = Context::default();
 
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;
@@ -80,13 +80,17 @@ impl Backtest {
         ensure!(history_size > 0, "历史数据长度错误: {history_size}");
 
         let backtest = Backtest::from(BacktestData {
-            context,
+            context: context.clone(),
             strategy,
             begin,
             end,
             history_size,
             force_sync_data,
         });
+
+        backtest
+            .context()
+            .set_runtime(Some(Box::new(backtest.clone())));
 
         Ok(backtest)
     }
