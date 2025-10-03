@@ -1,8 +1,12 @@
 from typing import Any, List, Tuple
 from .code import Codes
-from .alias import Size
+from .alias import Size, Time
 
 class Backtest:
+    begin: Time
+    end: Time
+    history_size: int
+
     def __init__(
         self,
         strategy: Any,

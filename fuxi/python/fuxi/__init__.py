@@ -1,5 +1,5 @@
 from ._core import *
-from .strategy import AbsStrategy, Strategy
+from .strategy import Strategy
 from typing import Tuple, Dict, Any, List, Optional
 import polars as pl
 import talib as ta

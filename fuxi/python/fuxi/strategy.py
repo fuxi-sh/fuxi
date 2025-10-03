@@ -1,47 +1,55 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict
-from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel
+from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 import polars as pl
 from datetime import datetime
 
 
-class AbsStrategy(ABC):
-    _context: Context
+class Strategy(ABC):
 
-    @abstractmethod
-    def on_start(self):
-        pass
-
-    @abstractmethod
-    def on_stop(self):
-        pass
-
-    @abstractmethod
-    def on_history_candle(self, code: Codes, candles: pl.DataFrame):
-        pass
-
-    @abstractmethod
-    def on_candle(self, code: Codes, candles: pl.DataFrame):
-        pass
-
-    @abstractmethod
-    def on_timer(self):
-        pass
-
-    @abstractmethod
-    def on_position(self):
-        pass
-
-    @abstractmethod
-    def on_order(self):
-        pass
-
-    @abstractmethod
-    def on_cash(self):
-        pass
+    def __init__(self):
+        self._candles = {}
 
     def _on_inject_context(self, context: Context):
         self._context = context
+
+    def _on_inject_backtest(self, backtest: Backtest):
+        self._backtest = backtest
+
+    def _on_start(self):
+        pass
+
+    def _on_stop(self):
+        pass
+
+    def _on_history_candle(self, code: Codes, candles: pl.DataFrame):
+        self._candles[code] = candles.rechunk()
+
+    def _on_candle(self, code: Codes, candles: pl.DataFrame):
+        self._candles[code] = (
+            pl.concat(
+                [self._candles[code], candles],
+                how="horizontal",
+            )
+            .unique(
+                subset=["time"],
+                keep="last",
+                maintain_order=True,
+            )
+            .rechunk()
+        )
+
+    def _on_timer(self):
+        pass
+
+    def _on_position(self):
+        pass
+
+    def _on_order(self):
+        pass
+
+    def _on_cash(self):
+        pass
 
     @property
     def mode(self) -> Mode:
@@ -100,48 +108,6 @@ class AbsStrategy(ABC):
 
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
-
-
-class Strategy(AbsStrategy):
-    _candles: Dict[Codes, pl.DataFrame]
-
-    def __init__(self):
-        self._candles = {}
-
-    def on_start(self):
-        pass
-
-    def on_stop(self):
-        pass
-
-    def on_history_candle(self, code: Codes, candles: pl.DataFrame):
-        self._candles[code] = candles.rechunk()
-
-    def on_candle(self, code: Codes, candles: pl.DataFrame):
-        self._candles[code] = (
-            pl.concat(
-                [self._candles[code], candles],
-                how="horizontal",
-            )
-            .unique(
-                subset=["time"],
-                keep="last",
-                maintain_order=True,
-            )
-            .rechunk()
-        )
-
-    def on_timer(self):
-        pass
-
-    def on_position(self):
-        pass
-
-    def on_order(self):
-        pass
-
-    def on_cash(self):
-        pass
 
     def get_candles(self, code: Codes) -> pl.DataFrame:
         if self.mode == Mode.Backtest:

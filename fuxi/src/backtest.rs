@@ -21,9 +21,9 @@ use std::{sync::Arc, time::Instant};
 pub struct Backtest {
     context: Context,
     strategy: Arc<Strategy>,
-    begin: Time,
-    end: Time,
-    history_size: usize,
+    pub begin: Time,
+    pub end: Time,
+    pub history_size: usize,
     force_sync_data: bool,
 }
 
@@ -94,6 +94,7 @@ impl Backtest {
             .set_runtime(Some(Box::new(backtest.clone())));
 
         strategy.on_inject_context(context.clone())?;
+        strategy.on_inject_backtest(backtest.clone())?;
 
         Ok(backtest)
     }
