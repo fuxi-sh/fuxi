@@ -15,7 +15,7 @@ use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods};
 use pyo3_polars::PyDataFrame;
 use rust_decimal::{Decimal, dec};
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 #[model(python)]
 pub struct Backtest {
@@ -163,6 +163,8 @@ impl Backtest {
         let strategy = self.strategy().clone();
 
         for code in codes {
+            let start_time = Instant::now();
+
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
                     "{}.feather",
@@ -184,8 +186,15 @@ impl Backtest {
                 df.rechunk_mut();
             }
 
-            self.context()
-                .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
+            let elapsed = start_time.elapsed();
+
+            self.context().show_log(
+                LogLevel::Debug,
+                format_args!(
+                    "加载数据完成 交易对: {code}, 耗时: {}, 数据: {df}",
+                    humantime::format_duration(elapsed),
+                ),
+            );
 
             strategy.on_history_candle(*code, PyDataFrame(df.clone()))?;
 
