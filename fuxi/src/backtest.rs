@@ -10,7 +10,8 @@ use crate::{
     },
 };
 use anyhow::{Result, ensure};
-use chrono::Duration;
+use chrono::{DateTime, Duration};
+use chrono_tz::Tz;
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
 use rust_decimal::{Decimal, dec};
@@ -198,6 +199,24 @@ impl Backtest {
 
             if df.should_rechunk() {
                 df.rechunk_mut();
+            }
+
+            let time_col = df.column("time")?.i64()?;
+            let open_col = df.column("open")?.f64()?;
+            let high_col = df.column("high")?.f64()?;
+            let low_col = df.column("low")?.f64()?;
+            let close_col = df.column("close")?.f64()?;
+            let volume_col = df.column("volume")?.f64()?;
+
+            for index in 0..df.height() {
+                let time = time_col.get(index);
+                self.context()
+                    .show_log(LogLevel::Debug, format_args!("time: {time:?}"));
+                let open = open_col.get(index);
+                let high = high_col.get(index);
+                let low = low_col.get(index);
+                let close = close_col.get(index);
+                let volume = volume_col.get(index);
             }
 
             self.context()

@@ -375,6 +375,7 @@ class Coins(Enum):
     WXRP = auto()
     MHYPE = auto()
     FLOW = auto()
+    VNTLS = auto()
 
     @staticmethod
     def members() -> List[Coins]: ...
@@ -774,6 +775,8 @@ class Codes(Enum):
     _0G_SWAP = auto()
     HEMI_SWAP = auto()
     APEX_SWAP = auto()
+    _2Z_SWAP = auto()
+    ZEC_SWAP = auto()
 
     @staticmethod
     def members() -> List[Codes]: ...
