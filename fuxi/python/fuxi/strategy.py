@@ -2,15 +2,16 @@ from abc import ABC
 from typing import Dict
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
+from .indicator import Indicator
 import polars as pl
+from polars import DataFrame
 from datetime import datetime, timedelta
 
 
 class Strategy(ABC):
-    candles: Dict[Codes, DataFrame]
-
     def __init__(self):
         self._candles = {}
+        self._indicators = {}
 
     def _on_inject_context(self, context: Context):
         self._context = context
@@ -24,7 +25,7 @@ class Strategy(ABC):
     def _on_stop(self):
         pass
 
-    def _on_history_candle(self, code: Codes, candles: pl.DataFrame):
+    def _on_history_candle(self, code: Codes, candles: DataFrame):
         if self.mode == Mode.Backtest:
             self._candles[code] = (
                 pl.select(
@@ -43,8 +44,10 @@ class Strategy(ABC):
             ).rechunk()
         else:
             self._candles[code] = candles.rechunk()
+        for key in self._indicators:
+            self._indicators[key]._on_candles(self, self._candles[code])
 
-    def _on_candle(self, code: Codes, candles: pl.DataFrame):
+    def _on_candle(self, code: Codes, candles: DataFrame):
         self._candles[code] = (
             pl.concat(
                 [self._candles[code], candles],
@@ -57,6 +60,8 @@ class Strategy(ABC):
             )
             .rechunk()
         )
+        for key in self._indicators:
+            self._indicators[key]._on_candles(self, self._candles[code])
 
     def _on_timer(self):
         pass
@@ -127,3 +132,6 @@ class Strategy(ABC):
 
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
+
+    def add_indicator(self, name: str, indicator: Indicator):
+        self._indicators[name] = indicator
