@@ -107,6 +107,10 @@ impl Backtest {
 
 impl Runtime for Backtest {
     fn run(&self) -> Result<()> {
+        let strategy = self.strategy().clone();
+
+        strategy.on_start()?;
+
         let codes = self
             .context()
             .symbols()
