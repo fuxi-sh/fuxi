@@ -10,6 +10,7 @@ pub struct Strategy {
     on_stop: Py<PyAny>,
     on_history_candle: Py<PyAny>,
     on_candle: Py<PyAny>,
+    on_timer: Py<PyAny>,
     on_position: Py<PyAny>,
     on_order: Py<PyAny>,
     on_cash: Py<PyAny>,
@@ -22,6 +23,7 @@ impl Strategy {
         let on_stop = instance.getattr("on_stop")?.unbind();
         let on_history_candle = instance.getattr("on_history_candle")?.unbind();
         let on_candle = instance.getattr("on_candle")?.unbind();
+        let on_timer = instance.getattr("on_timer")?.unbind();
         let on_position = instance.getattr("on_position")?.unbind();
         let on_order = instance.getattr("on_order")?.unbind();
         let on_cash = instance.getattr("on_cash")?.unbind();
@@ -32,6 +34,7 @@ impl Strategy {
             on_stop,
             on_history_candle,
             on_candle,
+            on_timer,
             on_position,
             on_order,
             on_cash,
@@ -64,6 +67,12 @@ impl Strategy {
     #[inline]
     pub fn on_candle(&self) -> Result<()> {
         Python::with_gil(|py| self.on_candle.call0(py))?;
+        Ok(())
+    }
+
+    #[inline]
+    pub fn on_timer(&self) -> Result<()> {
+        Python::with_gil(|py| self.on_timer.call0(py))?;
         Ok(())
     }
 

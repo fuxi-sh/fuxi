@@ -25,6 +25,10 @@ class AbsStrategy(ABC):
         pass
 
     @abstractmethod
+    def on_timer(self):
+        pass
+
+    @abstractmethod
     def on_position(self):
         pass
 
@@ -126,6 +130,9 @@ class Strategy(AbsStrategy):
             )
             .rechunk()
         )
+
+    def on_timer(self):
+        pass
 
     def on_position(self):
         pass

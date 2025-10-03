@@ -108,6 +108,7 @@ impl Backtest {
 
 impl Runtime for Backtest {
     fn run(&self) -> Result<()> {
+        let start_time = Instant::now();
         let strategy = self.strategy().clone();
 
         strategy.on_start()?;
@@ -130,10 +131,16 @@ impl Runtime for Backtest {
         while now < end {
             self.context().set_time(now);
 
-            strategy.on_candle()?;
+            strategy.on_timer()?;
 
             now += Duration::minutes(1);
         }
+
+        let elapsed = start_time.elapsed();
+        self.context().show_log(
+            LogLevel::Debug,
+            format_args!("回测完成 耗时: {}", humantime::format_duration(elapsed)),
+        );
 
         Ok(())
     }
