@@ -13,6 +13,7 @@ use anyhow::{Result, ensure};
 use chrono::Duration;
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods};
+use pyo3_polars::PyDataFrame;
 use rust_decimal::{Decimal, dec};
 use std::sync::Arc;
 
@@ -159,6 +160,8 @@ impl Backtest {
         let spot_dir = dir.join("spot");
         let swap_dir = dir.join("swap");
 
+        let strategy = self.strategy().clone();
+
         for code in codes {
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
@@ -179,6 +182,8 @@ impl Backtest {
 
             self.context()
                 .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
+
+            strategy.on_history_candle(*code, PyDataFrame(df.clone()))?;
 
             self.context()
                 .symbols()
