@@ -20,6 +20,7 @@ use std::fmt::Arguments;
 pub struct Context {
     runtime: Option<Box<dyn Runtime + Send + Sync + 'static>>,
     log_level: (LogLevel, LogLevel),
+    pub mode: Mode,
     pub time: Time,
     pub spot: Volume,
     pub swap: Volume,
@@ -40,7 +41,7 @@ impl Context {
         crate::helpers::log::print(format_args!(
             "{} {}{}{} - {}\n",
             Self::FMT_S,
-            match self.runtime().as_ref().unwrap().mode() {
+            match *self.mode() {
                 Mode::Backtest => "📊",
                 Mode::Sandbox => "🧪",
                 Mode::Mainnet => "🚀",
@@ -69,6 +70,7 @@ impl Context {
     #[pyo3(signature = (log_level=(LogLevel::Info, LogLevel::Info)))]
     fn new(log_level: (LogLevel, LogLevel)) -> Self {
         Self::from(ContextData {
+            mode: Mode::Backtest,
             runtime: None,
             log_level,
             time: default_time(),

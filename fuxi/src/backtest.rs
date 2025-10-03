@@ -45,8 +45,12 @@ impl Backtest {
             "策略必须继承自`Context`"
         );
         let context = strategy.extract::<Context>()?;
+        context.set_mode(Mode::Backtest);
 
-        let strategy = Strategy::new(strategy)?;
+        let begin = crate::helpers::time::str_to_time(begin)?;
+        let end = crate::helpers::time::str_to_time(end)?;
+        ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
+        context.set_time(begin);
 
         for (code, taker, maker, lever) in symbols {
             ensure!(
@@ -70,7 +74,6 @@ impl Backtest {
         );
         ensure!(spot >= Decimal::ZERO, "现货资金不能小于0");
         ensure!(swap >= Decimal::ZERO, "合约资金不能小于0");
-
         context.spot().set_total(spot);
         context.spot().set_avail(spot);
         context.swap().set_total(swap);
@@ -78,15 +81,9 @@ impl Backtest {
 
         ensure!(history_size > 0, "历史数据长度错误: {history_size}");
 
-        let begin = crate::helpers::time::str_to_time(begin)?;
-        let end = crate::helpers::time::str_to_time(end)?;
-        ensure!(begin < end, "开始时间不能大于结束时间: {begin} - {end}");
-
-        context.set_time(begin);
-
         let backtest = Backtest::from(BacktestData {
             context: context.clone(),
-            strategy,
+            strategy: Strategy::new(strategy)?,
             begin,
             end,
             history_size,
@@ -108,11 +105,6 @@ impl Backtest {
 }
 
 impl Runtime for Backtest {
-    #[inline]
-    fn mode(&self) -> Mode {
-        Mode::Backtest
-    }
-
     fn run(&self) -> Result<()> {
         let codes = self
             .context()

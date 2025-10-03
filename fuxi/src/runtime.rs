@@ -1,11 +1,10 @@
 use crate::types::{
     alias::{Price, Size},
-    base::{Codes, Direction, Method, Mode, Side},
+    base::{Codes, Direction, Method, Side},
 };
 use anyhow::Result;
 
 pub trait Runtime {
-    fn mode(&self) -> Mode;
     fn run(&self) -> Result<()>;
     fn place_order(
         &self,
