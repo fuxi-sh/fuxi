@@ -9,7 +9,9 @@ use crate::{
 use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
-    Bound, PyResult, pymethods,
+    Bound, PyResult,
+    exceptions::PyNotImplementedError,
+    pymethods,
     types::{PyTuple, PyTupleMethods},
 };
 use pyo3_polars::PyDataFrame;
@@ -75,6 +77,53 @@ impl Context {
             swap: Default::default(),
             symbols: Default::default(),
         })
+    }
+}
+
+#[pymethods]
+impl Context {
+    #[classattr]
+    const FMT_MS: &'static str = crate::helpers::constants::FMT_MS;
+
+    #[classattr]
+    const FMT_MS_CPT: &'static str = crate::helpers::constants::FMT_MS_CPT;
+
+    #[classattr]
+    const FMT_S: &'static str = crate::helpers::constants::FMT_S;
+
+    #[classattr]
+    const FMT_S_CPT: &'static str = crate::helpers::constants::FMT_S_CPT;
+}
+
+#[pymethods]
+impl Context {
+    #[staticmethod]
+    #[pyo3(signature = (millis))]
+    fn millis_to_time(millis: i64) -> Result<Time> {
+        crate::helpers::time::millis_to_time(millis)
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (nanos))]
+    fn nanos_to_time(nanos: i64) -> Time {
+        crate::helpers::time::nanos_to_time(nanos)
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (s))]
+    fn str_to_time(s: &str) -> Result<Time> {
+        crate::helpers::time::str_to_time(s)
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (t, fmt))]
+    fn time_to_str(t: Time, fmt: &str) -> String {
+        crate::helpers::time::time_to_str(t, fmt)
+    }
+
+    #[staticmethod]
+    fn new_id() -> String {
+        crate::helpers::id::new()
     }
 }
 
@@ -158,79 +207,29 @@ impl Context {
 
 #[pymethods]
 impl Context {
-    #[staticmethod]
-    #[pyo3(signature = (millis))]
-    fn millis_to_time(millis: i64) -> Result<Time> {
-        crate::helpers::time::millis_to_time(millis)
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (nanos))]
-    fn nanos_to_time(nanos: i64) -> Time {
-        crate::helpers::time::nanos_to_time(nanos)
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (s))]
-    fn str_to_time(s: &str) -> Result<Time> {
-        crate::helpers::time::str_to_time(s)
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (t, fmt))]
-    fn time_to_str(t: Time, fmt: &str) -> String {
-        crate::helpers::time::time_to_str(t, fmt)
-    }
-
-    #[staticmethod]
-    fn new_id() -> String {
-        crate::helpers::id::new()
-    }
-}
-
-#[pymethods]
-impl Context {
     fn on_start(&self) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err("子类必须实现`on_start`方法"))
     }
 
     fn on_stop(&self) -> PyResult<()> {
-        Ok(())
-    }
-
-    #[allow(unused_variables)]
-    fn on_history_candle(&self, code: Codes, candles: PyDataFrame) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err("子类必须实现`on_stop`方法"))
     }
 
     fn on_tick(&self) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err("子类必须实现`on_tick`方法"))
     }
 
     fn on_position(&self) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err(
+            "子类必须实现`on_position`方法",
+        ))
     }
 
     fn on_order(&self) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err("子类必须实现`on_order`方法"))
     }
 
     fn on_cash(&self) -> PyResult<()> {
-        Ok(())
+        Err(PyNotImplementedError::new_err("子类必须实现`on_cash`方法"))
     }
-}
-
-#[pymethods]
-impl Context {
-    #[classattr]
-    const FMT_MS: &'static str = crate::helpers::constants::FMT_MS;
-
-    #[classattr]
-    const FMT_MS_CPT: &'static str = crate::helpers::constants::FMT_MS_CPT;
-
-    #[classattr]
-    const FMT_S: &'static str = crate::helpers::constants::FMT_S;
-
-    #[classattr]
-    const FMT_S_CPT: &'static str = crate::helpers::constants::FMT_S_CPT;
 }
