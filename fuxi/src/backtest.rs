@@ -5,7 +5,7 @@ use crate::{
     strategy::Strategy,
     types::{
         alias::{Map, Price, Size, Time},
-        base::{Codes, Direction, LogLevel, Market, Method, Mode, Side},
+        base::{Codes, Direction, LogLevel, Market, Method, Side},
         market::{Candle, CandleData, Symbol},
     },
 };
