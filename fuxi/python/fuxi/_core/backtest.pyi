@@ -1,12 +1,11 @@
-from typing import List, Tuple
-from .context import Context
+from typing import Any, List, Tuple
 from .code import Codes
 from .alias import Size
 
 class Backtest:
     def __init__(
         self,
-        strategy: Context,
+        strategy: Any,
         begin: str,
         end: str,
         symbols: List[Tuple[Codes, Size, Size, Size]],

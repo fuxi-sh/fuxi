@@ -1,9 +1,13 @@
-use crate::types::{base::Codes, market::Candle};
+use crate::{
+    context::Context,
+    types::{base::Codes, market::Candle},
+};
 use anyhow::Result;
 use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
 use std::sync::Arc;
 
 pub struct Strategy {
+    on_inject_context: Py<PyAny>,
     on_start: Py<PyAny>,
     on_stop: Py<PyAny>,
     on_history_tick: Py<PyAny>,
@@ -15,6 +19,7 @@ pub struct Strategy {
 
 impl Strategy {
     pub fn new(instance: &Bound<PyAny>) -> Result<Arc<Self>> {
+        let on_inject_context = instance.getattr("on_inject_context")?.unbind();
         let on_start = instance.getattr("on_start")?.unbind();
         let on_stop = instance.getattr("on_stop")?.unbind();
         let on_history_tick = instance.getattr("on_history_tick")?.unbind();
@@ -24,6 +29,7 @@ impl Strategy {
         let on_cash = instance.getattr("on_cash")?.unbind();
 
         Ok(Arc::new(Self {
+            on_inject_context,
             on_start,
             on_stop,
             on_history_tick,
@@ -33,6 +39,13 @@ impl Strategy {
             on_cash,
         }))
     }
+
+    #[inline]
+    pub fn on_inject_context(&self, context: Context) -> Result<()> {
+        Python::attach(|py| self.on_inject_context.call1(py, (context,)))?;
+        Ok(())
+    }
+
     #[inline]
     pub fn on_start(&self) -> Result<()> {
         Python::attach(|py| self.on_start.call0(py))?;

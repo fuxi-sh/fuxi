@@ -41,9 +41,10 @@ impl Backtest {
         history_size: usize,
         force_sync_data: bool,
     ) -> Result<Self> {
-        let strategy = Strategy::new(strategy)?;
-
         let context = Context::default();
+
+        let strategy = Strategy::new(strategy)?;
+        strategy.on_inject_context(context.clone())?;
 
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;

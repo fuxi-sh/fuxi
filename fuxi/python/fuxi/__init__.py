@@ -6,3 +6,4 @@ import pyarrow as pa
 import numpy as np
 from datetime import datetime
 from decimal import Decimal
+from .strategy import Strategy
