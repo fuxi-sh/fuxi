@@ -3,7 +3,7 @@ from .indicator import Indicator
 from .strategy import Strategy
 from typing import Tuple, Dict, Any, List, Optional
 import polars as pl
-from polars import DataFrame
+from polars import DataFrame, Series
 import talib as ta
 import numpy as np
 from numpy.typing import NDArray

@@ -43,6 +43,7 @@ class Strategy(ABC):
                 )
                 .lazy()
                 .join(candles.lazy(), on="time", how="left")
+                .fill_null(0.0)
                 .collect()
             ).rechunk()
         else:
