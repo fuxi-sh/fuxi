@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Dict
+from typing import Dict, List
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 from .indicator import Indicator
@@ -9,9 +9,12 @@ from datetime import datetime, timedelta
 
 
 class Strategy(ABC):
+    _candles: Dict[Codes, DataFrame]
+    _candle_indicators: Dict[Codes, List[Indicator]]
+
     def __init__(self):
         self._candles = {}
-        self._indicators = {}
+        self._candle_indicators = {}
 
     def _on_inject_context(self, context: Context):
         self._context = context
@@ -44,8 +47,7 @@ class Strategy(ABC):
             ).rechunk()
         else:
             self._candles[code] = candles.rechunk()
-        for key in self._indicators:
-            self._indicators[key]._on_candles(self, self._candles[code])
+        self._calculate_candle_indicators(code, candles)
 
     def _on_candle(self, code: Codes, candles: DataFrame):
         self._candles[code] = (
@@ -60,8 +62,7 @@ class Strategy(ABC):
             )
             .rechunk()
         )
-        for key in self._indicators:
-            self._indicators[key]._on_candles(self, self._candles[code])
+        self._calculate_candle_indicators(code, candles)
 
     def _on_timer(self):
         pass
@@ -133,5 +134,13 @@ class Strategy(ABC):
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
 
-    def add_indicator(self, name: str, indicator: Indicator):
-        self._indicators[name] = indicator
+    def add_indicator(self, code: Codes, indicator: Indicator):
+        if code not in self._candle_indicators:
+            self._candle_indicators[code] = []
+        self._candle_indicators[code].append(indicator)
+
+    def _calculate_candle_indicators(self, code: Codes, candles: DataFrame):
+        if code not in self._candle_indicators:
+            return
+        for indicator in self._candle_indicators[code]:
+            indicator._on_data(candles)
