@@ -4,12 +4,13 @@ use crate::{
     runtime::Runtime,
     strategy::Strategy,
     types::{
-        alias::{Price, Size, Time},
+        alias::{Map, Price, Size, Time},
         base::{Codes, Direction, LogLevel, Market, Method, Mode, Side},
-        market::Symbol,
+        market::{Candle, Symbol},
     },
 };
 use anyhow::{Result, ensure};
+use chrono::Duration;
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
 use rust_decimal::{Decimal, dec};
@@ -116,7 +117,17 @@ impl Runtime for Backtest {
 
         history_data::download(self.context().clone(), &codes, *self.force_sync_data())?;
 
-        self.load_data(&codes)?;
+        let candles = self.load_candles(&codes)?;
+
+        let strategy = self.strategy().clone();
+
+        let mut now = *self.begin();
+        let end = *self.end();
+
+        while now < end {
+            self.context().set_time(now);
+            now += Duration::minutes(1);
+        }
 
         Ok(())
     }
@@ -139,12 +150,14 @@ impl Runtime for Backtest {
 }
 
 impl Backtest {
-    fn load_data(&self, codes: &[Codes]) -> Result<()> {
+    fn load_candles(&self, codes: &[Codes]) -> Result<Map<Codes, Vec<Option<Candle>>>> {
         use polars::prelude::*;
 
         let dir = std::env::current_dir()?.join("data");
         let spot_dir = dir.join("spot");
         let swap_dir = dir.join("swap");
+
+        let mut code_candles = Map::new();
 
         let time_range = date_range(
             "time".into(),
@@ -156,11 +169,12 @@ impl Backtest {
             Some(&chrono_tz::Asia::Shanghai),
         )?
         .into_column();
+        let data_len = time_range.len();
         let time_range = DataFrame::new(vec![time_range])?.lazy();
 
-        let strategy = self.strategy().clone();
-
         for code in codes {
+            let mut candles = Vec::with_capacity(data_len);
+
             let file_path = match code.market() {
                 Market::Spot => spot_dir.join(format!(
                     "{}.feather",
@@ -186,27 +200,18 @@ impl Backtest {
                 df.rechunk_mut();
             }
 
-            let df = df.slice(
-                (*self.context().time() - *self.begin()).num_minutes(),
-                *self.history_size(),
-            );
+            for row in df.iter_rows(0) {
+                candles.push(Some(Candle::new(
+                    code, row[0], row[1], row[2], row[3], row[4], row[5],
+                )));
+            }
 
             self.context()
-                .show_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
+                .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
 
-            let history_df = df.slice(
-                (*self.context().time() - *self.begin()).num_minutes(),
-                *self.history_size(),
-            );
-
-            self.context()
-                .symbols()
-                .maps()
-                .get(code)
-                .unwrap()
-                .set_candles(df);
+            code_candles.insert(*code, candles);
         }
 
-        Ok(())
+        Ok(code_candles)
     }
 }

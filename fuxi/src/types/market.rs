@@ -4,7 +4,6 @@ use crate::types::{
     position::Position,
 };
 use fuxi_macros::{define_map, model};
-use polars::frame::DataFrame;
 
 #[model(python)]
 pub struct Candle {
@@ -49,7 +48,6 @@ pub struct Symbol {
     pub taker: Size,
     pub maker: Size,
     pub position: Position,
-    candles: DataFrame,
 }
 
 define_map!(pub SymbolMap is Codes to Symbol);
@@ -61,7 +59,6 @@ impl Symbol {
             taker,
             maker,
             position: Position::new(code, lever),
-            candles: Default::default(),
         })
     }
 }
