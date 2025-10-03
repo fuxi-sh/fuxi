@@ -20,11 +20,11 @@ class Strategy(ABC):
         pass
 
     @abstractmethod
-    def on_history_tick(self, code: Codes, candles: DataFrame):
+    def on_history_candle(self, code: Codes, candles: DataFrame):
         pass
 
     @abstractmethod
-    def on_tick(self, code: Codes, candles: DataFrame):
+    def on_candle(self, code: Codes, candles: DataFrame):
         pass
 
     @abstractmethod

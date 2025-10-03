@@ -117,13 +117,7 @@ impl Runtime for Backtest {
 
         history_data::download(self.context().clone(), &codes, *self.force_sync_data())?;
 
-        let candles = self.load_candles(&codes)?;
-
-        let strategy = self.strategy().clone();
-
-        for (code, candles) in &candles {
-            strategy.on_history_tick(*code, candles.clone())?;
-        }
+        self.load_candles(&codes)?;
 
         let mut now = *self.begin();
         let end = *self.end();

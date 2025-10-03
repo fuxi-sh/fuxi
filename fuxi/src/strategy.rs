@@ -1,17 +1,15 @@
-use crate::{
-    context::Context,
-    types::{base::Codes, market::Candle},
-};
+use crate::{context::Context, types::base::Codes};
 use anyhow::Result;
 use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
+use pyo3_polars::PyDataFrame;
 use std::sync::Arc;
 
 pub struct Strategy {
     on_inject_context: Py<PyAny>,
     on_start: Py<PyAny>,
     on_stop: Py<PyAny>,
-    on_history_tick: Py<PyAny>,
-    on_tick: Py<PyAny>,
+    on_history_candle: Py<PyAny>,
+    on_candle: Py<PyAny>,
     on_position: Py<PyAny>,
     on_order: Py<PyAny>,
     on_cash: Py<PyAny>,
@@ -22,8 +20,8 @@ impl Strategy {
         let on_inject_context = instance.getattr("on_inject_context")?.unbind();
         let on_start = instance.getattr("on_start")?.unbind();
         let on_stop = instance.getattr("on_stop")?.unbind();
-        let on_history_tick = instance.getattr("on_history_tick")?.unbind();
-        let on_tick = instance.getattr("on_tick")?.unbind();
+        let on_history_candle = instance.getattr("on_history_candle")?.unbind();
+        let on_candle = instance.getattr("on_candle")?.unbind();
         let on_position = instance.getattr("on_position")?.unbind();
         let on_order = instance.getattr("on_order")?.unbind();
         let on_cash = instance.getattr("on_cash")?.unbind();
@@ -32,8 +30,8 @@ impl Strategy {
             on_inject_context,
             on_start,
             on_stop,
-            on_history_tick,
-            on_tick,
+            on_history_candle,
+            on_candle,
             on_position,
             on_order,
             on_cash,
@@ -42,48 +40,48 @@ impl Strategy {
 
     #[inline]
     pub fn on_inject_context(&self, context: Context) -> Result<()> {
-        Python::attach(|py| self.on_inject_context.call1(py, (context,)))?;
+        Python::with_gil(|py| self.on_inject_context.call1(py, (context,)))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_start(&self) -> Result<()> {
-        Python::attach(|py| self.on_start.call0(py))?;
+        Python::with_gil(|py| self.on_start.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_stop(&self) -> Result<()> {
-        Python::attach(|py| self.on_stop.call0(py))?;
+        Python::with_gil(|py| self.on_stop.call0(py))?;
         Ok(())
     }
 
     #[inline]
-    pub fn on_history_tick(&self, code: Codes, candles: Vec<Candle>) -> Result<()> {
-        Python::attach(|py| self.on_history_tick.call1(py, (code, candles)))?;
+    pub fn on_history_candle(&self, code: Codes, candles: PyDataFrame) -> Result<()> {
+        Python::with_gil(|py| self.on_history_candle.call1(py, (code, candles)))?;
         Ok(())
     }
     #[inline]
-    pub fn on_tick(&self) -> Result<()> {
-        Python::attach(|py| self.on_tick.call0(py))?;
+    pub fn on_candle(&self) -> Result<()> {
+        Python::with_gil(|py| self.on_candle.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_position(&self) -> Result<()> {
-        Python::attach(|py| self.on_position.call0(py))?;
+        Python::with_gil(|py| self.on_position.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_order(&self) -> Result<()> {
-        Python::attach(|py| self.on_order.call0(py))?;
+        Python::with_gil(|py| self.on_order.call0(py))?;
         Ok(())
     }
 
     #[inline]
     pub fn on_cash(&self) -> Result<()> {
-        Python::attach(|py| self.on_cash.call0(py))?;
+        Python::with_gil(|py| self.on_cash.call0(py))?;
         Ok(())
     }
 }
