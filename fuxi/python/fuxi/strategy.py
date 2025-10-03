@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Dict
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 import polars as pl
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Strategy(ABC):
@@ -23,7 +23,17 @@ class Strategy(ABC):
         pass
 
     def _on_history_candle(self, code: Codes, candles: pl.DataFrame):
-        self._candles[code] = candles.rechunk()
+        if self.mode == Mode.Backtest:
+            times = pl.datetime_range(
+                self._backtest.begin - timedelta(minutes=self._backtest.history_size),
+                self._backtest.end,
+                interval="1m",
+                closed="both",
+                time_unit="ns",
+                time_zone="Asia/Shanghai",
+            )
+
+            self._candles[code] = candles.rechunk()
 
     def _on_candle(self, code: Codes, candles: pl.DataFrame):
         self._candles[code] = (

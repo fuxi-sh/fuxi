@@ -5,5 +5,5 @@ import polars as pl
 import talib as ta
 import pyarrow as pa
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal

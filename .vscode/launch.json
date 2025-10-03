@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/examples/demo.py",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/examples"
+            "cwd": "${workspaceFolder}/examples",
+            "justMyCode": false
         }
     ]
 }
