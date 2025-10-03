@@ -10,11 +10,10 @@ use crate::{
     },
 };
 use anyhow::{Result, ensure};
-use chrono::{DateTime, Duration};
-use chrono_tz::Tz;
+use chrono::Duration;
 use fuxi_macros::model;
-use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
-use rust_decimal::{Decimal, dec, prelude::FromPrimitive};
+use pyo3::{Bound, PyAny, pymethods};
+use rust_decimal::{Decimal, dec};
 use std::sync::Arc;
 
 #[model(python)]
@@ -42,12 +41,9 @@ impl Backtest {
         history_size: usize,
         force_sync_data: bool,
     ) -> Result<Self> {
-        ensure!(
-            strategy.is_instance_of::<Context>(),
-            "策略必须继承自`Context`"
-        );
-        let context = strategy.extract::<Context>()?;
-        context.set_mode(Mode::Backtest);
+        let strategy = Strategy::new(strategy)?;
+
+        let context = Context::new(Mode::Backtest, (LogLevel::Info, LogLevel::Info));
 
         let begin = crate::helpers::time::str_to_time(begin)?;
         let end = crate::helpers::time::str_to_time(end)?;
@@ -84,15 +80,13 @@ impl Backtest {
         ensure!(history_size > 0, "历史数据长度错误: {history_size}");
 
         let backtest = Backtest::from(BacktestData {
-            context: context.clone(),
-            strategy: Strategy::new(strategy)?,
+            context,
+            strategy,
             begin,
             end,
             history_size,
             force_sync_data,
         });
-
-        context.set_runtime(Some(Box::new(backtest.clone())));
 
         Ok(backtest)
     }

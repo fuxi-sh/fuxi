@@ -1,8 +1,7 @@
+use crate::types::{base::Codes, market::Candle};
 use anyhow::Result;
 use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
 use std::sync::Arc;
-
-use crate::types::{alias::Map, base::Codes, market::Candle};
 
 pub struct Strategy {
     on_start: Py<PyAny>,

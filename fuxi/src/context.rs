@@ -1,33 +1,38 @@
-use crate::{
-    runtime::Runtime,
-    types::{
-        alias::{Time, default_time},
-        base::{Codes, LogLevel, Mode, Volume},
-        market::{Candle, SymbolMap},
-    },
+use crate::types::{
+    alias::{Time, default_time},
+    base::{LogLevel, Mode, Volume},
+    market::SymbolMap,
 };
 use anyhow::Result;
 use fuxi_macros::model;
 use pyo3::{
-    Bound, PyResult,
-    exceptions::PyNotImplementedError,
-    pymethods,
+    Bound, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
 use std::fmt::Arguments;
 
-#[model(python, abs)]
+#[model(python)]
 pub struct Context {
-    runtime: Option<Box<dyn Runtime + Send + Sync + 'static>>,
-    log_level: (LogLevel, LogLevel),
     pub mode: Mode,
     pub time: Time,
     pub spot: Volume,
     pub swap: Volume,
     pub symbols: SymbolMap,
+    log_level: (LogLevel, LogLevel),
 }
 
 impl Context {
+    pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
+        Self::from(ContextData {
+            mode,
+            log_level,
+            time: default_time(),
+            spot: Default::default(),
+            swap: Default::default(),
+            symbols: Default::default(),
+        })
+    }
+
     fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
             self.log_level().0
@@ -66,23 +71,6 @@ impl Context {
 
 #[pymethods]
 impl Context {
-    #[new]
-    #[pyo3(signature = (log_level=(LogLevel::Info, LogLevel::Info)))]
-    fn new(log_level: (LogLevel, LogLevel)) -> Self {
-        Self::from(ContextData {
-            mode: Mode::Backtest,
-            runtime: None,
-            log_level,
-            time: default_time(),
-            spot: Default::default(),
-            swap: Default::default(),
-            symbols: Default::default(),
-        })
-    }
-}
-
-#[pymethods]
-impl Context {
     #[classattr]
     const FMT_MS: &'static str = crate::helpers::constants::FMT_MS;
 
@@ -94,10 +82,22 @@ impl Context {
 
     #[classattr]
     const FMT_S_CPT: &'static str = crate::helpers::constants::FMT_S_CPT;
-}
 
-#[pymethods]
-impl Context {
+    #[pyo3(name = "show_log", signature = (level, *args))]
+    fn show_strategy_log(&self, level: LogLevel, args: &Bound<'_, PyTuple>) {
+        self.log(
+            false,
+            level,
+            format_args!(
+                "{}",
+                args.iter()
+                    .map(|arg| arg.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
+            ),
+        );
+    }
+
     #[staticmethod]
     #[pyo3(signature = (millis))]
     fn millis_to_time(millis: i64) -> Result<Time> {
@@ -125,120 +125,5 @@ impl Context {
     #[staticmethod]
     fn new_id() -> String {
         crate::helpers::id::new()
-    }
-}
-
-#[pymethods]
-impl Context {
-    #[pyo3(signature = (*args))]
-    fn show_trace_log(&self, args: &Bound<'_, PyTuple>) {
-        self.log(
-            false,
-            LogLevel::Trace,
-            format_args!(
-                "{}",
-                args.iter()
-                    .map(|arg| arg.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            ),
-        );
-    }
-
-    #[pyo3(signature = (*args))]
-    fn show_debug_log(&self, args: &Bound<'_, PyTuple>) {
-        self.log(
-            false,
-            LogLevel::Debug,
-            format_args!(
-                "{}",
-                args.iter()
-                    .map(|arg| arg.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            ),
-        );
-    }
-
-    #[pyo3(signature = (*args))]
-    fn show_info_log(&self, args: &Bound<'_, PyTuple>) {
-        self.log(
-            false,
-            LogLevel::Info,
-            format_args!(
-                "{}",
-                args.iter()
-                    .map(|arg| arg.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            ),
-        );
-    }
-
-    #[pyo3(signature = (*args))]
-    fn show_warn_log(&self, args: &Bound<'_, PyTuple>) {
-        self.log(
-            false,
-            LogLevel::Warn,
-            format_args!(
-                "{}",
-                args.iter()
-                    .map(|arg| arg.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            ),
-        );
-    }
-
-    #[pyo3(signature = (*args))]
-    fn show_error_log(&self, args: &Bound<'_, PyTuple>) {
-        self.log(
-            false,
-            LogLevel::Error,
-            format_args!(
-                "{}",
-                args.iter()
-                    .map(|arg| arg.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            ),
-        );
-    }
-}
-
-#[pymethods]
-impl Context {
-    fn on_start(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`on_start`方法"))
-    }
-
-    fn on_stop(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`on_stop`方法"))
-    }
-
-    #[allow(unused_variables)]
-    #[pyo3(signature = (code, candles))]
-    fn on_history_tick(&self, code: Codes, candles: Vec<Candle>) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "子类必须实现`on_history_tick`方法",
-        ))
-    }
-
-    fn on_tick(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`on_tick`方法"))
-    }
-
-    fn on_position(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err(
-            "子类必须实现`on_position`方法",
-        ))
-    }
-
-    fn on_order(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`on_order`方法"))
-    }
-
-    fn on_cash(&self) -> PyResult<()> {
-        Err(PyNotImplementedError::new_err("子类必须实现`on_cash`方法"))
     }
 }
