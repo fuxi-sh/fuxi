@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel
 import polars as pl
 from datetime import datetime

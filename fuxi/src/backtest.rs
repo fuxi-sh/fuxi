@@ -128,7 +128,7 @@ impl Runtime for Backtest {
         let mut now = *self.begin();
         let end = *self.end();
 
-        while now < end {
+        while now <= end {
             self.context().set_time(now);
 
             strategy.on_timer()?;
