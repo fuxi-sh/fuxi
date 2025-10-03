@@ -5,7 +5,7 @@ from polars import DataFrame
 from datetime import datetime
 
 
-class Strategy(ABC):
+class AbsStrategy(ABC):
     _context: Context
 
     @abstractmethod
@@ -96,3 +96,26 @@ class Strategy(ABC):
 
     def set_log_level(self, engine: LogLevel, strategy: LogLevel):
         self._context.set_log_level(engine, strategy)
+
+
+class Strategy(AbsStrategy):
+    def on_start(self):
+        pass
+
+    def on_stop(self):
+        pass
+
+    def on_history_candle(self, code: Codes, candles: DataFrame):
+        pass
+
+    def on_candle(self, code: Codes, candles: DataFrame):
+        pass
+
+    def on_position(self):
+        pass
+
+    def on_order(self):
+        pass
+
+    def on_cash(self):
+        pass
