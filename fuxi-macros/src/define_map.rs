@@ -72,28 +72,28 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
             fn __iter__(&self) -> #keys_iter_name {
                 #keys_iter_name {
                     data: self.clone(),
-                    index: 0,
+                    index: ::std::sync::Arc::new(::std::sync::atomic::AtomicUsize::new(0)),
                 }
             }
 
             fn keys(&self) -> #keys_iter_name {
                 #keys_iter_name {
                     data: self.clone(),
-                    index: ::std::sync::atomic::AtomicUsize::new(0),
+                    index: ::std::sync::Arc::new(::std::sync::atomic::AtomicUsize::new(0)),
                 }
             }
 
             fn values(&self) -> #values_iter_name {
                 #values_iter_name {
                     data: self.clone(),
-                    index: ::std::sync::atomic::AtomicUsize::new(0),
+                    index: ::std::sync::Arc::new(::std::sync::atomic::AtomicUsize::new(0)),
                 }
             }
 
             fn items(&self) -> #items_iter_name {
                 #items_iter_name {
                     data: self.clone(),
-                    index: ::std::sync::atomic::AtomicUsize::new(0),
+                    index: ::std::sync::Arc::new(::std::sync::atomic::AtomicUsize::new(0)),
                 }
             }
         }
@@ -104,7 +104,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
         #[derive(Clone, Default)]
         #vis struct #keys_iter_name {
             pub data: #name,
-            pub index: ::std::sync::atomic::AtomicUsize,
+            pub index: ::std::sync::Arc<::std::sync::atomic::AtomicUsize>,
         }
 
         #[::pyo3::pymethods]
@@ -113,7 +113,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
                 slf
             }
 
-            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#key> {
+            fn __next__(mut slf: ::pyo3::PyRef<'_, Self>) -> Option<#key> {
                 let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
                 if index < slf.data.maps().len() {
                     slf.data.maps().get_index(index).map(|(k, _)| k.clone())
@@ -129,7 +129,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
         #[derive(Clone, Default)]
         #vis struct #values_iter_name {
             pub data: #name,
-            pub index: ::std::sync::atomic::AtomicUsize,
+            pub index: ::std::sync::Arc<::std::sync::atomic::AtomicUsize>,
         }
 
         #[::pyo3::pymethods]
@@ -138,7 +138,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
                 slf
             }
 
-            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#value> {
+            fn __next__(mut slf: ::pyo3::PyRef<'_, Self>) -> Option<#value> {
                 let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
                 if index < slf.data.maps().len() {
                     slf.data.maps().get_index(index).map(|(_, v)| v.clone())
@@ -154,7 +154,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
         #[derive(Clone, Default)]
         #vis struct #items_iter_name {
             pub data: #name,
-            pub index: ::std::sync::atomic::AtomicUsize,
+            pub index: ::std::sync::Arc<::std::sync::atomic::AtomicUsize>,
         }
 
         #[::pyo3::pymethods]
@@ -163,7 +163,7 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
                 slf
             }
 
-            fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<(#key, #value)> {
+            fn __next__(mut slf: ::pyo3::PyRef<'_, Self>) -> Option<(#key, #value)> {
                 let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
                 if index < slf.data.maps().len() {
                     slf.data.maps().get_index(index).map(|(k, v)| (k.clone(), v.clone()))
