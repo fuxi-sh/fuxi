@@ -200,12 +200,6 @@ impl Backtest {
                 df.rechunk_mut();
             }
 
-            for row in df.iter_rows(0) {
-                candles.push(Some(Candle::new(
-                    code, row[0], row[1], row[2], row[3], row[4], row[5],
-                )));
-            }
-
             self.context()
                 .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
 

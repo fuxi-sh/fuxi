@@ -59,13 +59,16 @@ chrono-tz = { version = "0.10" }
 pyo3 = { version = "0.26", features = ["full", "multiple-pymethods"] }
 humantime = { version = "2.3" }
 num-format = { version = "0.4" }
-polars = { version = "0.51.0", features = [
-    "nightly",
-    "simd",
-    "avx512",
-    "ipc",
-    "ipc_streaming",
+polars = { version = "0.51", features = [
     "lazy",
+    "streaming",
+    "random",
+    "temporal",
     "timezones",
-    "dtype-full",
+    "object",
+    "nightly",
+    "performant",
+    "cse",
+    "ipc",
+    "fmt",
 ] }
