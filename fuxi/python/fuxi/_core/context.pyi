@@ -10,10 +10,6 @@ class Context:
     spot: Volume
     swap: Volume
     symbols: Dict[Codes, Symbol]
-    FMT_MS: str
-    FMT_MS_CPT: str
-    FMT_S: str
-    FMT_S_CPT: str
     def show_log(self, level: LogLevel, *args): ...
     @staticmethod
     def millis_to_time(millis: int) -> Time: ...

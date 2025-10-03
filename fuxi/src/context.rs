@@ -1,7 +1,10 @@
-use crate::types::{
-    alias::{Time, default_time},
-    base::{LogLevel, Mode, Volume},
-    market::SymbolMap,
+use crate::{
+    runtime::Runtime,
+    types::{
+        alias::{Time, default_time},
+        base::{LogLevel, Mode, Volume},
+        market::SymbolMap,
+    },
 };
 use anyhow::Result;
 use fuxi_macros::model;
@@ -18,6 +21,7 @@ pub struct Context {
     pub spot: Volume,
     pub swap: Volume,
     pub symbols: SymbolMap,
+    runtime: Option<Box<dyn Runtime + Send + Sync + 'static>>,
     log_level: (LogLevel, LogLevel),
 }
 
@@ -25,6 +29,7 @@ impl Context {
     pub fn new(mode: Mode, log_level: (LogLevel, LogLevel)) -> Self {
         Self::from(ContextData {
             mode,
+            runtime: None,
             log_level,
             time: default_time(),
             spot: Default::default(),
@@ -45,7 +50,7 @@ impl Context {
 
         crate::helpers::log::print(format_args!(
             "{} {}{}{} - {}\n",
-            Self::FMT_S,
+            self.time().format(crate::helpers::constants::FMT_S),
             match *self.mode() {
                 Mode::Backtest => "📊",
                 Mode::Sandbox => "🧪",
@@ -71,20 +76,8 @@ impl Context {
 
 #[pymethods]
 impl Context {
-    #[classattr]
-    const FMT_MS: &'static str = crate::helpers::constants::FMT_MS;
-
-    #[classattr]
-    const FMT_MS_CPT: &'static str = crate::helpers::constants::FMT_MS_CPT;
-
-    #[classattr]
-    const FMT_S: &'static str = crate::helpers::constants::FMT_S;
-
-    #[classattr]
-    const FMT_S_CPT: &'static str = crate::helpers::constants::FMT_S_CPT;
-
     #[pyo3(name = "show_log", signature = (level, *args))]
-    fn show_strategy_log(&self, level: LogLevel, args: &Bound<'_, PyTuple>) {
+    fn _show_log(&self, level: LogLevel, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             level,
