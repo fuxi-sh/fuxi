@@ -8,9 +8,6 @@ from datetime import datetime
 class Strategy(ABC):
     _context: Context
 
-    def _on_inject_context(self, context: Context):
-        self._context = context
-
     @abstractmethod
     def on_start(self):
         pass
@@ -38,6 +35,9 @@ class Strategy(ABC):
     @abstractmethod
     def on_cash(self):
         pass
+
+    def _on_inject_context(self, context: Context):
+        self._context = context
 
     @property
     def mode(self) -> Mode:
@@ -93,3 +93,6 @@ class Strategy(ABC):
     @staticmethod
     def new_id() -> str:
         return Context.new_id()
+
+    def set_log_level(self, engine: LogLevel, strategy: LogLevel):
+        self._context.set_log_level(engine, strategy)

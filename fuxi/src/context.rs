@@ -93,6 +93,11 @@ impl Context {
         );
     }
 
+    #[pyo3(name = "set_log_level", signature = (engine, strategy))]
+    fn _set_log_level(&self, engine: LogLevel, strategy: LogLevel) {
+        self.set_log_level((engine, strategy));
+    }
+
     #[staticmethod]
     #[pyo3(signature = (millis))]
     fn millis_to_time(millis: i64) -> Result<Time> {
