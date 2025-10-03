@@ -47,8 +47,8 @@ impl Strategy {
     }
 
     #[inline]
-    pub fn on_history_tick(&self, candles: Map<Codes, Vec<Candle>>) -> Result<()> {
-        Python::attach(|py| self.on_history_tick.call1(py, (candles,)))?;
+    pub fn on_history_tick(&self, code: Codes, candles: Vec<Candle>) -> Result<()> {
+        Python::attach(|py| self.on_history_tick.call1(py, (code, candles)))?;
         Ok(())
     }
     #[inline]

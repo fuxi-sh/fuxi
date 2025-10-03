@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple
-from .market import Symbol
+from typing import Dict, List, Tuple
+from .market import Candle, Symbol
 from .code import Codes
 from .base import LogLevel, Mode, Volume
 from .alias import Time
@@ -35,6 +35,8 @@ class Context(ABC):
     def on_start(self): ...
     @abstractmethod
     def on_stop(self): ...
+    @abstractmethod
+    def on_history_tick(self, code: Codes, candles: List[Candle]): ...
     @abstractmethod
     def on_tick(self): ...
     @abstractmethod

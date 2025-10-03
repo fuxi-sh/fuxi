@@ -122,6 +122,10 @@ impl Runtime for Backtest {
 
         let strategy = self.strategy().clone();
 
+        for (code, candles) in &candles {
+            strategy.on_history_tick(*code, candles.clone())?;
+        }
+
         let mut now = *self.begin();
         let end = *self.end();
 

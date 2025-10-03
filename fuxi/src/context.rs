@@ -2,8 +2,8 @@ use crate::{
     runtime::Runtime,
     types::{
         alias::{Time, default_time},
-        base::{LogLevel, Mode, Volume},
-        market::SymbolMap,
+        base::{Codes, LogLevel, Mode, Volume},
+        market::{Candle, SymbolMap},
     },
 };
 use anyhow::Result;
@@ -216,7 +216,9 @@ impl Context {
         Err(PyNotImplementedError::new_err("子类必须实现`on_stop`方法"))
     }
 
-    fn on_history_tick(&self) -> PyResult<()> {
+    #[allow(unused_variables)]
+    #[pyo3(signature = (code, candles))]
+    fn on_history_tick(&self, code: Codes, candles: Vec<Candle>) -> PyResult<()> {
         Err(PyNotImplementedError::new_err(
             "子类必须实现`on_history_tick`方法",
         ))
