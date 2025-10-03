@@ -50,7 +50,7 @@ class Strategy(ABC):
             ).rechunk()
         else:
             self._candles[code] = candles.rechunk()
-        self._calculate_candle_indicators(code, candles)
+        self._calculate_candle_indicators(code, self._candles[code])
 
     def _on_candle(self, code: Codes, candles: DataFrame):
         self._candles[code] = (
@@ -65,7 +65,7 @@ class Strategy(ABC):
             )
             .rechunk()
         )
-        self._calculate_candle_indicators(code, candles)
+        self._calculate_candle_indicators(code, self._candles[code])
 
     def _on_timer(self):
         self.on_timer()
