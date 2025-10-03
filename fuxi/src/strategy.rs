@@ -17,7 +17,7 @@ pub struct Strategy {
 
 impl Strategy {
     pub fn new(instance: &Bound<PyAny>) -> Result<Arc<Self>> {
-        let on_inject_context = instance.getattr("on_inject_context")?.unbind();
+        let on_inject_context = instance.getattr("_on_inject_context")?.unbind();
         let on_start = instance.getattr("on_start")?.unbind();
         let on_stop = instance.getattr("on_stop")?.unbind();
         let on_history_candle = instance.getattr("on_history_candle")?.unbind();

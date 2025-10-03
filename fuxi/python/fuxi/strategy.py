@@ -8,7 +8,7 @@ from datetime import datetime
 class Strategy(ABC):
     _context: Context
 
-    def on_inject_context(self, context: Context):
+    def _on_inject_context(self, context: Context):
         self._context = context
 
     @abstractmethod
