@@ -174,11 +174,15 @@ impl Backtest {
                 )),
             };
 
-            let df = LazyFrame::scan_ipc(
+            let mut df = LazyFrame::scan_ipc(
                 PlPathRef::from_local_path(file_path.as_path()).into_owned(),
                 Default::default(),
             )?
             .collect()?;
+
+            if df.should_rechunk() {
+                df.rechunk_mut();
+            }
 
             self.context()
                 .show_log(LogLevel::Debug, format_args!("加载数据完成 {code} {df}"));
