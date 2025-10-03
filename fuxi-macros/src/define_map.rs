@@ -79,32 +79,32 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
             fn keys(&self) -> #keys_iter_name {
                 #keys_iter_name {
                     data: self.clone(),
-                    index: 0,
+                    index: ::std::sync::atomic::AtomicUsize::new(0),
                 }
             }
 
             fn values(&self) -> #values_iter_name {
                 #values_iter_name {
                     data: self.clone(),
-                    index: 0,
+                    index: ::std::sync::atomic::AtomicUsize::new(0),
                 }
             }
 
             fn items(&self) -> #items_iter_name {
                 #items_iter_name {
                     data: self.clone(),
-                    index: 0,
+                    index: ::std::sync::atomic::AtomicUsize::new(0),
                 }
             }
         }
     });
 
     tokens.push(quote! {
-        #[::pyo3::pyclass]
+        #[::pyo3::pyclass(frozen)]
         #[derive(Clone, Default)]
         #vis struct #keys_iter_name {
             pub data: #name,
-            pub index: usize,
+            pub index: ::std::sync::atomic::AtomicUsize,
         }
 
         #[::pyo3::pymethods]
@@ -114,10 +114,9 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
             }
 
             fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#key> {
-                if slf.index < slf.data.maps().len() {
-                    let result = slf.data.maps().get_index(slf.index).map(|(k, _)| k.clone());
-                    slf.index += 1;
-                    result
+                let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
+                if index < slf.data.maps().len() {
+                    slf.data.maps().get_index(index).map(|(k, _)| k.clone())
                 } else {
                     None
                 }
@@ -126,11 +125,11 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
     });
 
     tokens.push(quote! {
-        #[::pyo3::pyclass]
+        #[::pyo3::pyclass(frozen)]
         #[derive(Clone, Default)]
         #vis struct #values_iter_name {
             pub data: #name,
-            pub index: usize,
+            pub index: ::std::sync::atomic::AtomicUsize,
         }
 
         #[::pyo3::pymethods]
@@ -140,10 +139,9 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
             }
 
             fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<#value> {
-                if slf.index < slf.data.maps().len() {
-                    let result = slf.data.maps().get_index(slf.index).map(|(_, v)| v.clone());
-                    slf.index += 1;
-                    result
+                let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
+                if index < slf.data.maps().len() {
+                    slf.data.maps().get_index(index).map(|(_, v)| v.clone())
                 } else {
                     None
                 }
@@ -152,11 +150,11 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
     });
 
     tokens.push(quote! {
-        #[::pyo3::pyclass]
+        #[::pyo3::pyclass(frozen)]
         #[derive(Clone, Default)]
         #vis struct #items_iter_name {
             pub data: #name,
-            pub index: usize,
+            pub index: ::std::sync::atomic::AtomicUsize,
         }
 
         #[::pyo3::pymethods]
@@ -166,10 +164,9 @@ pub fn generate(ast: ParseStream) -> Result<TokenStream> {
             }
 
             fn __next__(mut slf: ::pyo3::PyRefMut<'_, Self>) -> Option<(#key, #value)> {
-                if slf.index < slf.data.maps().len() {
-                    let result = slf.data.maps().get_index(slf.index).map(|(k, v)| (k.clone(), v.clone()));
-                    slf.index += 1;
-                    result
+                let index = slf.index.fetch_add(1, ::std::sync::atomic::Ordering::Release);
+                if index < slf.data.maps().len() {
+                    slf.data.maps().get_index(index).map(|(k, v)| (k.clone(), v.clone()))
                 } else {
                     None
                 }
