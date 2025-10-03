@@ -1,5 +1,4 @@
 use crate::{
-    helpers::constants::{FMT_STY_1, FMT_STY_2},
     runtime::Runtime,
     types::{
         alias::{Time, default_time},
@@ -27,7 +26,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
+    fn log(&self, engine: bool, level: LogLevel, msg: Arguments) {
         let curr_level = if engine {
             self.log_level().0
         } else {
@@ -37,15 +36,10 @@ impl Context {
             return;
         }
 
-        let mode = self.runtime().as_ref().unwrap().mode();
-
         crate::helpers::log::print(format_args!(
             "{} {}{}{} - {}\n",
-            self.time().format(match mode {
-                Mode::Backtest => FMT_STY_1,
-                _ => FMT_STY_2,
-            }),
-            match mode {
+            Self::FMT_S,
+            match self.runtime().as_ref().unwrap().mode() {
                 Mode::Backtest => "📊",
                 Mode::Sandbox => "🧪",
                 Mode::Mainnet => "🚀",
@@ -63,7 +57,7 @@ impl Context {
     }
 
     #[inline]
-    pub fn engine_log(&self, level: LogLevel, msg: Arguments) {
+    pub fn show_log(&self, level: LogLevel, msg: Arguments) {
         self.log(true, level, msg);
     }
 }
@@ -87,7 +81,7 @@ impl Context {
 #[pymethods]
 impl Context {
     #[pyo3(signature = (*args))]
-    fn trace(&self, args: &Bound<'_, PyTuple>) {
+    fn show_trace_log(&self, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             LogLevel::Trace,
@@ -102,7 +96,7 @@ impl Context {
     }
 
     #[pyo3(signature = (*args))]
-    fn debug(&self, args: &Bound<'_, PyTuple>) {
+    fn show_debug_log(&self, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             LogLevel::Debug,
@@ -117,7 +111,7 @@ impl Context {
     }
 
     #[pyo3(signature = (*args))]
-    fn info(&self, args: &Bound<'_, PyTuple>) {
+    fn show_info_log(&self, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             LogLevel::Info,
@@ -132,7 +126,7 @@ impl Context {
     }
 
     #[pyo3(signature = (*args))]
-    fn warn(&self, args: &Bound<'_, PyTuple>) {
+    fn show_warn_log(&self, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             LogLevel::Warn,
@@ -147,7 +141,7 @@ impl Context {
     }
 
     #[pyo3(signature = (*args))]
-    fn error(&self, args: &Bound<'_, PyTuple>) {
+    fn show_error_log(&self, args: &Bound<'_, PyTuple>) {
         self.log(
             false,
             LogLevel::Error,
@@ -164,44 +158,33 @@ impl Context {
 
 #[pymethods]
 impl Context {
-    fn millis_to_time(&self, millis: i64) -> Result<Time> {
+    #[staticmethod]
+    #[pyo3(signature = (millis))]
+    fn millis_to_time(millis: i64) -> Result<Time> {
         crate::helpers::time::millis_to_time(millis)
     }
 
-    fn nanos_to_time(&self, nanos: i64) -> Time {
+    #[staticmethod]
+    #[pyo3(signature = (nanos))]
+    fn nanos_to_time(nanos: i64) -> Time {
         crate::helpers::time::nanos_to_time(nanos)
     }
 
-    fn str_to_time(&self, s: &str) -> Result<Time> {
+    #[staticmethod]
+    #[pyo3(signature = (s))]
+    fn str_to_time(s: &str) -> Result<Time> {
         crate::helpers::time::str_to_time(s)
     }
 
-    fn time_to_str(&self, t: Time, fmt: &str) -> String {
+    #[staticmethod]
+    #[pyo3(signature = (t, fmt))]
+    fn time_to_str(t: Time, fmt: &str) -> String {
         crate::helpers::time::time_to_str(t, fmt)
     }
 
-    fn new_id(&self) -> String {
+    #[staticmethod]
+    fn new_id() -> String {
         crate::helpers::id::new()
-    }
-
-    #[getter(FMT_MS)]
-    fn fmt_ms(&self) -> &'static str {
-        crate::helpers::constants::FMT_MS
-    }
-
-    #[getter(FMT_MS_CPT)]
-    fn fmt_ms_cpt(&self) -> &'static str {
-        crate::helpers::constants::FMT_MS_CPT
-    }
-
-    #[getter(FMT_S)]
-    fn fmt_s(&self) -> &'static str {
-        crate::helpers::constants::FMT_S
-    }
-
-    #[getter(FMT_S_CPT)]
-    fn fmt_s_cpt(&self) -> &'static str {
-        crate::helpers::constants::FMT_S_CPT
     }
 }
 
@@ -235,4 +218,19 @@ impl Context {
     fn on_cash(&self) -> PyResult<()> {
         Ok(())
     }
+}
+
+#[pymethods]
+impl Context {
+    #[classattr]
+    const FMT_MS: &'static str = crate::helpers::constants::FMT_MS;
+
+    #[classattr]
+    const FMT_MS_CPT: &'static str = crate::helpers::constants::FMT_MS_CPT;
+
+    #[classattr]
+    const FMT_S: &'static str = crate::helpers::constants::FMT_S;
+
+    #[classattr]
+    const FMT_S_CPT: &'static str = crate::helpers::constants::FMT_S_CPT;
 }

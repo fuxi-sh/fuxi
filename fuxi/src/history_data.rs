@@ -52,7 +52,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
         let handle = tokio::spawn(async move {
             let start_time = Instant::now();
 
-            context.engine_log(LogLevel::Debug, format_args!("下载k线 {code}..."));
+            context.show_log(LogLevel::Debug, format_args!("下载k线 {code}..."));
 
             let response = reqwest::get(download_path).await?;
 
@@ -93,7 +93,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
                     df.rechunk_mut();
                 }
 
-                _context.engine_log(LogLevel::Debug, format_args!("{code} {df}"));
+                _context.show_log(LogLevel::Debug, format_args!("{code} {df}"));
 
                 let mut file = std::fs::OpenOptions::new()
                     .create(true)
@@ -108,7 +108,7 @@ pub async fn download(context: Context, codes: &[Codes], force: bool) -> Result<
             .await??;
 
             let elapsed = start_time.elapsed();
-            context.engine_log(
+            context.show_log(
                 LogLevel::Debug,
                 format_args!(
                     "下载k线完成 交易对: {code}, 耗时: {}",

@@ -200,7 +200,7 @@ impl Backtest {
             );
 
             self.context()
-                .engine_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
+                .show_log(LogLevel::Debug, format_args!("{code}: 加载数据完成 {df}"));
 
             let history_df = df.slice(
                 (*self.context().time() - *self.begin()).num_minutes(),
