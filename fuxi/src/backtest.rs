@@ -22,14 +22,14 @@ pub struct Backtest {
     begin: Time,
     end: Time,
     history_size: usize,
-    sync_data: bool,
+    force_sync_data: bool,
 }
 
 #[pymethods]
 impl Backtest {
     #[allow(clippy::too_many_arguments)]
     #[new]
-    #[pyo3(signature = (strategy, begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000, sync_data=false))]
+    #[pyo3(signature = (strategy, begin, end, symbols, spot = dec!(1000), swap = dec!(1000), history_size=5000, force_sync_data=false))]
     fn new(
         strategy: &Bound<PyAny>,
         begin: &str,
@@ -38,7 +38,7 @@ impl Backtest {
         spot: Size,
         swap: Size,
         history_size: usize,
-        sync_data: bool,
+        force_sync_data: bool,
     ) -> Result<Self> {
         ensure!(
             strategy.is_instance_of::<Context>(),
@@ -90,7 +90,7 @@ impl Backtest {
             begin,
             end,
             history_size,
-            sync_data,
+            force_sync_data,
         });
 
         context.set_runtime(Some(Box::new(backtest.clone())));
@@ -122,7 +122,7 @@ impl Runtime for Backtest {
             .cloned()
             .collect::<Vec<_>>();
 
-        history_data::download(self.context().clone(), &codes, *self.sync_data())?;
+        history_data::download(self.context().clone(), &codes, *self.force_sync_data())?;
 
         self.load_data(&codes)?;
 
