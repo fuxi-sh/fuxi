@@ -1,5 +1,5 @@
 use crate::types::{
-    alias::{Price, Size, Time, default_time},
+    alias::{Size, Time, default_time},
     base::Codes,
     position::Position,
 };
@@ -9,21 +9,21 @@ use fuxi_macros::{define_map, model};
 pub struct Candle {
     pub code: Codes,
     pub time: Time,
-    pub open: Price,
-    pub high: Price,
-    pub low: Price,
-    pub close: Price,
-    pub volume: Size,
+    pub open: f64,
+    pub high: f64,
+    pub low: f64,
+    pub close: f64,
+    pub volume: f64,
 }
 
 #[model(python)]
 pub struct FundingRate {
     pub code: Codes,
     pub time: Time,
-    pub rate: Size,
+    pub rate: f64,
     pub next_time: Time,
-    pub min: Size,
-    pub max: Size,
+    pub min: f64,
+    pub max: f64,
     pub update_time: Time,
 }
 

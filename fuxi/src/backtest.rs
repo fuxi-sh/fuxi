@@ -6,7 +6,7 @@ use crate::{
     types::{
         alias::{Map, Price, Size, Time},
         base::{Codes, Direction, LogLevel, Market, Method, Mode, Side},
-        market::{Candle, Symbol},
+        market::{Candle, CandleData, Symbol},
     },
 };
 use anyhow::{Result, ensure};
@@ -14,7 +14,7 @@ use chrono::{DateTime, Duration};
 use chrono_tz::Tz;
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods, types::PyAnyMethods};
-use rust_decimal::{Decimal, dec};
+use rust_decimal::{Decimal, dec, prelude::FromPrimitive};
 use std::sync::Arc;
 
 #[model(python)]
@@ -192,16 +192,12 @@ impl Backtest {
                 Default::default(),
             )?;
 
-            let mut df = time_range
+            let df = time_range
                 .clone()
                 .left_join(df, col("time"), col("time"))
                 .collect()?;
 
-            if df.should_rechunk() {
-                df.rechunk_mut();
-            }
-
-            let time_col = df.column("time")?.i64()?;
+            let time_col = df.column("time")?.datetime()?;
             let open_col = df.column("open")?.f64()?;
             let high_col = df.column("high")?.f64()?;
             let low_col = df.column("low")?.f64()?;
@@ -209,14 +205,29 @@ impl Backtest {
             let volume_col = df.column("volume")?.f64()?;
 
             for index in 0..df.height() {
-                let time = time_col.get(index);
-                self.context()
-                    .show_log(LogLevel::Debug, format_args!("time: {time:?}"));
-                let open = open_col.get(index);
-                let high = high_col.get(index);
-                let low = low_col.get(index);
-                let close = close_col.get(index);
-                let volume = volume_col.get(index);
+                let time = time_col.get_any_value(index)?.extract::<i64>();
+                if time.is_none() {
+                    candles.push(None);
+                    continue;
+                }
+                let time = crate::helpers::time::nanos_to_time(time.unwrap());
+                let open = open_col.get(index).unwrap_or(0.);
+                let high = high_col.get(index).unwrap_or(0.);
+                let low = low_col.get(index).unwrap_or(0.);
+                let close = close_col.get(index).unwrap_or(0.);
+                let volume = volume_col.get(index).unwrap_or(0.);
+                candles.push(Some(
+                    CandleData {
+                        code: *code,
+                        time,
+                        open,
+                        high,
+                        low,
+                        close,
+                        volume,
+                    }
+                    .into(),
+                ));
             }
 
             self.context()
