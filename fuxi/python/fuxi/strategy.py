@@ -25,10 +25,10 @@ class Strategy(ABC):
         self._backtest = backtest
 
     def _on_start(self):
-        pass
+        self.on_start()
 
     def _on_stop(self):
-        pass
+        self.on_stop()
 
     def _on_history_candle(self, code: Codes, candles: DataFrame):
         if self.mode == Mode.Backtest:
@@ -138,6 +138,10 @@ class Strategy(ABC):
         self._context.set_log_level(engine, strategy)
 
     @abstractmethod
+    def on_start(self): ...
+    @abstractmethod
+    def on_stop(self): ...
+    @abstractmethod
     def on_timer(self): ...
 
     def add_candle_indicator(self, code: Codes, indicator: Indicator):
@@ -161,3 +165,11 @@ class Strategy(ABC):
             return df.slice(0, ((self.time - self._backtest.begin).seconds // 60))
         else:
             return df
+
+    def get_candle(self, code: Codes) -> DataFrame:
+        if code not in self._candles:
+            return None
+        if self.mode == Mode.Backtest:
+            return self._candles[code].slice(0, (self.time - self._backtest.begin).seconds // 60)
+        else:
+            return self._candles[code]
