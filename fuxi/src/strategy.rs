@@ -5,6 +5,7 @@ use std::sync::Arc;
 pub struct Strategy {
     on_start: Py<PyAny>,
     on_stop: Py<PyAny>,
+    on_history_tick: Py<PyAny>,
     on_tick: Py<PyAny>,
     on_position: Py<PyAny>,
     on_order: Py<PyAny>,
@@ -15,6 +16,7 @@ impl Strategy {
     pub fn new(instance: &Bound<PyAny>) -> Result<Arc<Self>> {
         let on_start = instance.getattr("on_start")?.unbind();
         let on_stop = instance.getattr("on_stop")?.unbind();
+        let on_history_tick = instance.getattr("on_history_tick")?.unbind();
         let on_tick = instance.getattr("on_tick")?.unbind();
         let on_position = instance.getattr("on_position")?.unbind();
         let on_order = instance.getattr("on_order")?.unbind();
@@ -23,6 +25,7 @@ impl Strategy {
         Ok(Arc::new(Self {
             on_start,
             on_stop,
+            on_history_tick,
             on_tick,
             on_position,
             on_order,
@@ -41,6 +44,11 @@ impl Strategy {
         Ok(())
     }
 
+    #[inline]
+    pub fn on_history_tick(&self) -> Result<()> {
+        Python::with_gil(|py| self.on_history_tick.call0(py))?;
+        Ok(())
+    }
     #[inline]
     pub fn on_tick(&self) -> Result<()> {
         Python::with_gil(|py| self.on_tick.call0(py))?;

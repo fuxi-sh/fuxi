@@ -216,6 +216,12 @@ impl Context {
         Err(PyNotImplementedError::new_err("子类必须实现`on_stop`方法"))
     }
 
+    fn on_history_tick(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "子类必须实现`on_history_tick`方法",
+        ))
+    }
+
     fn on_tick(&self) -> PyResult<()> {
         Err(PyNotImplementedError::new_err("子类必须实现`on_tick`方法"))
     }
