@@ -73,7 +73,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         symbols: vec![],
     };
 
-    let spot_json: Value = serde_json::from_str(&std::fs::read_to_string(&spot_path)?)?;
+    let spot_json: Value = serde_json::from_str(
+        &std::fs::read_to_string(&spot_path)
+            .map_err(|err| format!("读取文件失败:{} {}", spot_path.display(), err))?,
+    )?;
 
     for token in spot_json[0]["tokens"].as_array().unwrap().iter() {
         let name = token["name"].as_str().unwrap().to_string();
@@ -98,7 +101,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         context.symbols.push(Symbol { variant });
     }
 
-    let swap_json: Value = serde_json::from_str(&std::fs::read_to_string(&swap_path)?)?;
+    let swap_json: Value = serde_json::from_str(
+        &std::fs::read_to_string(&swap_path)
+            .map_err(|err| format!("读取文件失败:{} {}", swap_path.display(), err))?,
+    )?;
 
     for pair in swap_json[0]["universe"].as_array().unwrap().iter() {
         if pair["isDelisted"].as_bool().unwrap_or(false) {
