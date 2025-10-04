@@ -5,12 +5,12 @@ use crate::{
     strategy::Strategy,
     types::{
         alias::{Price, Size, Time},
-        base::{Codes, Direction, LogLevel, Market, Method, Side},
+        base::{Codes, Direction, LogLevel, Market, Method, Side, Timer},
         market::Symbol,
     },
 };
 use anyhow::{Result, ensure};
-use chrono::Duration;
+use chrono::{Duration, Timelike};
 use fuxi_macros::model;
 use pyo3::{Bound, PyAny, pymethods};
 use pyo3_polars::PyDataFrame;
@@ -136,6 +136,14 @@ impl Runtime for Backtest {
 
             for code in &codes {
                 strategy.on_candle(*code, None)?;
+            }
+
+            strategy.on_timer(Timer::Minutely)?;
+            if now.minute() == 0 {
+                strategy.on_timer(Timer::Hourly)?;
+            }
+            if now.minute() == 0 && now.hour() == 0 {
+                strategy.on_timer(Timer::Daily)?;
             }
 
             now += Duration::minutes(1);

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 from pandas import DataFrame
-from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
+from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest, Timer
 from .indicator import Indicator
 import polars as pl
 from polars import DataFrame
@@ -181,7 +181,7 @@ class Strategy(ABC):
         """K线事件"""
 
     @abstractmethod
-    def on_timer(self):
+    def on_timer(self, timer: Timer):
         """定时器事件"""
 
     # ================================================================ #
@@ -235,8 +235,8 @@ class Strategy(ABC):
             self._calculate_candle_indicators(code, df)
         self.on_candle(code, df)
 
-    def _on_timer(self):
-        self.on_timer()
+    def _on_timer(self, timer: Timer):
+        self.on_timer(timer)
 
     def _on_position(self):
         pass

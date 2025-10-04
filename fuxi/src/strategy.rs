@@ -1,4 +1,8 @@
-use crate::{backtest::Backtest, context::Context, types::base::Codes};
+use crate::{
+    backtest::Backtest,
+    context::Context,
+    types::base::{Codes, Timer},
+};
 use anyhow::Result;
 use pyo3::{Bound, Py, PyAny, Python, types::PyAnyMethods};
 use pyo3_polars::PyDataFrame;
@@ -80,8 +84,8 @@ impl Strategy {
     }
 
     #[inline]
-    pub fn on_timer(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_timer.call0(py))?;
+    pub fn on_timer(&self, timer: Timer) -> Result<()> {
+        Python::with_gil(|py| self.on_timer.call1(py, (timer,)))?;
         Ok(())
     }
 

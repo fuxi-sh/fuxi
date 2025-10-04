@@ -1,4 +1,4 @@
-from .base import LogLevel, Mode, Market, Method, Direction, Side, OrderStatus, Interval, Volume, Pnl
+from .base import LogLevel, Mode, Market, Method, Direction, Side, OrderStatus, Interval, Volume, Pnl, Timer
 from .code import Coins, Codes
 from .market import Candle, FundingRate, Symbol
 from .order import Order
