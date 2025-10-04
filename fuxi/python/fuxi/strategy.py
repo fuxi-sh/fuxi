@@ -173,6 +173,14 @@ class Strategy(ABC):
         """停止事件"""
 
     @abstractmethod
+    def on_history_candle(self, code: Codes, candles: DataFrame):
+        """历史K线事件"""
+
+    @abstractmethod
+    def on_candle(self, code: Codes, candles: DataFrame):
+        """K线事件"""
+
+    @abstractmethod
     def on_timer(self):
         """定时器事件"""
 
@@ -202,23 +210,30 @@ class Strategy(ABC):
         self.on_stop()
 
     def _on_history_candle(self, code: Codes, candles: DataFrame):
-        self._candles[code] = candles.rechunk()
-        self._calculate_candle_indicators(code, self._candles[code])
+        df = candles.rechunk()
+        self._candles[code] = df
+        self._calculate_candle_indicators(code, df)
+        self.on_history_candle(code, df)
 
     def _on_candle(self, code: Codes, candles: DataFrame):
-        self._candles[code] = (
-            pl.concat(
-                [self._candles[code], candles],
-                how="horizontal",
+        if self.mode == Mode.Backtest:
+            df = self._candles[code].slice(0, self._backtest.offset)
+        else:
+            df = (
+                pl.concat(
+                    [self._candles[code], candles],
+                    how="horizontal",
+                )
+                .unique(
+                    subset=["time"],
+                    keep="last",
+                    maintain_order=True,
+                )
+                .rechunk()
             )
-            .unique(
-                subset=["time"],
-                keep="last",
-                maintain_order=True,
-            )
-            .rechunk()
-        )
-        self._calculate_candle_indicators(code, self._candles[code])
+            self._candles[code] = df
+            self._calculate_candle_indicators(code, df)
+        self.on_candle(code, df)
 
     def _on_timer(self):
         self.on_timer()
