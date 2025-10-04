@@ -215,7 +215,7 @@ class Strategy(ABC):
         self._calculate_candle_indicators(code, df)
         self.on_history_candle(code, df)
 
-    def _on_candle(self, code: Codes, candles: Optional[DataFrame]):
+    def _on_candle(self, code: Codes, candles: DataFrame):
         if self.mode == Mode.Backtest:
             df = self._candles[code].slice(0, self._backtest.offset)
         else:
