@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 from polars import DataFrame, Series
 import talib as ta
 
@@ -11,10 +12,10 @@ class Indicator(ABC):
         self.name = name
 
     @abstractmethod
-    def on_calculate(self, data: DataFrame) -> DataFrame: ...
+    def on_calculate(self, data: DataFrame) -> List[Series]: ...
 
     def _on_data(self, data: DataFrame):
-        self._indicator = self.on_calculate(data).rechunk()
+        self._indicator = data.select("time").with_columns(self.on_calculate(data)).rechunk()
 
 
 class SMA(Indicator):
@@ -34,10 +35,10 @@ class SMA(Indicator):
         self.indicator_name = indicator_name
         self.period = period
 
-    def on_calculate(self, data: DataFrame) -> DataFrame:
+    def on_calculate(self, data: DataFrame) -> List[Series]:
         data_series = data[self.data_name].to_numpy(allow_copy=False)
         sma = ta.SMA(data_series, self.period)
-        return data.select("time").with_columns(Series(self.indicator_name, sma))
+        return [Series(self.indicator_name, sma)]
 
 
 class EMA(Indicator):
@@ -57,10 +58,10 @@ class EMA(Indicator):
         self.indicator_name = indicator_name
         self.period = period
 
-    def on_calculate(self, data: DataFrame) -> DataFrame:
+    def on_calculate(self, data: DataFrame) -> List[Series]:
         data_series = data[self.data_name].to_numpy(allow_copy=False)
         ema = ta.EMA(data_series, self.period)
-        return data.select("time").with_columns(Series(self.indicator_name, ema))
+        return [Series(self.indicator_name, ema)]
 
 
 class MACD(Indicator):
@@ -92,11 +93,11 @@ class MACD(Indicator):
         self.slow = slow
         self.signal = signal
 
-    def on_calculate(self, data: DataFrame) -> DataFrame:
+    def on_calculate(self, data: DataFrame) -> List[Series]:
         data_series = data[self.data_name].to_numpy(allow_copy=False)
         macd, macd_signal, macd_hist = ta.MACD(data_series, self.fast, self.slow, self.signal)
-        return data.select("time").with_columns(
+        return [
             Series(self.indicator_macd_name, macd),
             Series(self.indicator_macd_signal_name, macd_signal),
             Series(self.indicator_macd_hist_name, macd_hist),
-        )
+        ]
