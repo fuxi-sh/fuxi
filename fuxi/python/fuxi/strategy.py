@@ -5,7 +5,7 @@ from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 from .indicator import Indicator
 import polars as pl
 from polars import DataFrame
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class Strategy(ABC):

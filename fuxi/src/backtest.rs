@@ -137,7 +137,7 @@ impl Runtime for Backtest {
             strategy.on_timer()?;
 
             now += Duration::minutes(1);
-            self.set_offset(*self.offset() + 1);
+            *self.offset_mut() += 1;
         }
 
         let elapsed = start_time.elapsed();
