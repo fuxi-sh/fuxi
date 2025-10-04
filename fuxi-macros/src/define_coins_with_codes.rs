@@ -35,6 +35,9 @@ pub fn generate() -> Result<TokenStream> {
     let spot_path = dir.join("spot.json");
     let swap_path = dir.join("swap.json");
 
+    println!("cargo:warning=检查文件: {}", spot_path.display());
+    println!("cargo:warning=检查文件: {}", swap_path.display());
+
     let mut coins = vec![];
     let mut symbols = vec![];
 
