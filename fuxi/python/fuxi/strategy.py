@@ -1,7 +1,8 @@
 from abc import ABC
-from typing import Dict
+from decimal import Decimal
+from typing import Dict, Optional
 from pandas import DataFrame
-from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest, Timer
+from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest, Timer, Order, Method, Direction, Side
 from .indicator import Indicator
 import polars as pl
 from polars import DataFrame
@@ -39,7 +40,7 @@ class Strategy(ABC):
         return self._context.symbols
 
     # ================================================================ #
-    # API
+    # 日志API
     # ================================================================ #
 
     def trace_log(self, *args):
@@ -67,6 +68,9 @@ class Strategy(ABC):
         """毫秒转换为时间"""
         return Context.millis_to_time(millis)
 
+    # ================================================================ #
+    # 辅助API
+    # ================================================================ #
     @staticmethod
     def nanos_to_time(nanos: int) -> datetime:
         """纳秒转换为时间"""
@@ -160,6 +164,144 @@ class Strategy(ABC):
             return self._candles[code].slice(0, self._backtest.offset)
         else:
             return self._candles[code]
+
+    # ================================================================ #
+    # 订单API
+    # ================================================================ #
+
+    def buy(
+        self,
+        code: Codes,
+        size: Decimal,
+        price: Decimal,
+        remark: Optional[str] = None,
+    ) -> Order:
+        """
+        做多开仓
+        - [`code`]: 交易对
+        - [`size`]: 数量
+        - [`price`]: 价格
+        - [`remark`]: 备注
+        """
+        return self._context.place_order(
+            code,
+            Method.Limit,
+            Direction.Long,
+            Side.Buy,
+            size,
+            price,
+            remark,
+        )
+
+    def sell(
+        self,
+        code: Codes,
+        size: Decimal,
+        price: Decimal,
+        remark: Optional[str] = None,
+    ) -> Order:
+        """
+        做多平仓
+        - [`code`]: 交易对
+        - [`size`]: 数量
+        - [`price`]: 价格
+        - [`remark`]: 备注
+        """
+        return self._context.place_order(
+            code,
+            Method.Limit,
+            Direction.Long,
+            Side.Sell,
+            size,
+            price,
+            remark,
+        )
+
+    def short(
+        self,
+        code: Codes,
+        size: Decimal,
+        price: Decimal,
+        remark: Optional[str] = None,
+    ) -> Order:
+        """
+        做空开仓
+        - [`code`]: 交易对
+        - [`size`]: 数量
+        - [`price`]: 价格
+        - [`remark`]: 备注
+        """
+        return self._context.place_order(
+            code,
+            Method.Limit,
+            Direction.Short,
+            Side.Sell,
+            size,
+            price,
+            remark,
+        )
+
+    def cover(
+        self,
+        code: Codes,
+        size: Decimal,
+        price: Decimal,
+        remark: Optional[str] = None,
+    ) -> Order:
+        """
+        做空平仓
+        - [`code`]: 交易对
+        - [`size`]: 数量
+        - [`price`]: 价格
+        - [`remark`]: 备注
+        """
+        return self._context.place_order(
+            code,
+            Method.Limit,
+            Direction.Short,
+            Side.Buy,
+            size,
+            price,
+            remark,
+        )
+
+    def send_order(
+        self,
+        code: Codes,
+        method: Method,
+        direction: Direction,
+        side: Side,
+        size: Decimal,
+        price: Decimal,
+        remark: Optional[str] = None,
+    ) -> Order:
+        """
+        下单
+        - [`code`]: 交易对
+        - [`method`]: 交易方式
+        - [`direction`]: 交易方向
+        - [`side`]: 买卖方向
+        - [`size`]: 订单数量
+        - [`price`]: 订单价格
+        - [`remark`]: 备注
+        """
+        return self._context.place_order(
+            code,
+            method,
+            direction,
+            side,
+            size,
+            price,
+            remark,
+        )
+
+    def cancel(self, code: Codes, id: str):
+        """
+        取消订单
+        - [`code`]: 交易对
+        - [`id`]: 订单id
+        """
+        self._context.cancel_order(code, id)
 
     # ================================================================ #
     # 事件
