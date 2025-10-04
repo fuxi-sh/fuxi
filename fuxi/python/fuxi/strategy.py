@@ -318,6 +318,9 @@ class Strategy(ABC):
     def on_candle(self, code: Codes, candles: DataFrame):
         """K线事件"""
 
+    def on_signal(self):
+        """信号事件"""
+
     def on_timer(self, timer: Timer):
         """定时器事件"""
 
@@ -371,6 +374,7 @@ class Strategy(ABC):
             self._candles[code] = df
             self._calculate_candle_indicators(code, df)
         self.on_candle(code, df)
+        self.on_signal()
 
     def _on_timer(self, timer: Timer):
         self.on_timer(timer)
