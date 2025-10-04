@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest, Timer
@@ -164,23 +164,18 @@ class Strategy(ABC):
     # ================================================================ #
     # 事件
     # ================================================================ #
-    @abstractmethod
     def on_init(self):
         """初始化事件"""
 
-    @abstractmethod
     def on_stop(self):
         """停止事件"""
 
-    @abstractmethod
     def on_history_candle(self, code: Codes, candles: DataFrame):
         """历史K线事件"""
 
-    @abstractmethod
     def on_candle(self, code: Codes, candles: DataFrame):
         """K线事件"""
 
-    @abstractmethod
     def on_timer(self, timer: Timer):
         """定时器事件"""
 
