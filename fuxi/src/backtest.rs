@@ -210,7 +210,14 @@ impl Backtest {
             let mut df = time_range
                 .clone()
                 .left_join(df, col("time"), col("time"))
-                .fill_null(lit(0.0))
+                .with_columns([
+                    col("open").fill_null(0.0),
+                    col("high").fill_null(0.0),
+                    col("low").fill_null(0.0),
+                    col("close").fill_null(0.0),
+                    col("volume").fill_null(0.0),
+                    col("finished").fill_null(true),
+                ])
                 .collect()?;
 
             if df.should_rechunk() {
