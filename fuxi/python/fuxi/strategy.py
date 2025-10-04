@@ -139,19 +139,16 @@ class Strategy(ABC):
         获取信号
         - [`name`]: 信号名
         """
-        df = self._signals[name]
         if self.mode == Mode.Backtest:
-            return df.slice(0, self._backtest.offset)
+            return self._signals[name].slice(0, self._backtest.offset)
         else:
-            return df
+            return self._signals[name]
 
     def get_candle(self, code: Codes) -> DataFrame:
         """
         获取K线
         - [`code`]: 交易对
         """
-        if code not in self._candles:
-            return None
         if self.mode == Mode.Backtest:
             return self._candles[code].slice(0, self._backtest.offset)
         else:
