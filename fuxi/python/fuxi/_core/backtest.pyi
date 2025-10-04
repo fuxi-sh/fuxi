@@ -6,6 +6,7 @@ class Backtest:
     begin: Time
     end: Time
     history_size: int
+    offset: int
 
     def __init__(
         self,

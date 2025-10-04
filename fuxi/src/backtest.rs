@@ -19,11 +19,12 @@ use std::{sync::Arc, time::Instant};
 
 #[model(python)]
 pub struct Backtest {
-    context: Context,
-    strategy: Arc<Strategy>,
     pub begin: Time,
     pub end: Time,
     pub history_size: usize,
+    pub offset: usize,
+    context: Context,
+    strategy: Arc<Strategy>,
     force_sync_data: bool,
 }
 
@@ -81,11 +82,12 @@ impl Backtest {
         ensure!(history_size > 0, "历史数据长度错误: {history_size}");
 
         let backtest = Backtest::from(BacktestData {
-            context: context.clone(),
-            strategy: strategy.clone(),
             begin,
             end,
             history_size,
+            offset: history_size,
+            context: context.clone(),
+            strategy: strategy.clone(),
             force_sync_data,
         });
 
@@ -135,6 +137,7 @@ impl Runtime for Backtest {
             strategy.on_timer()?;
 
             now += Duration::minutes(1);
+            self.set_offset(*self.offset() + 1);
         }
 
         let elapsed = start_time.elapsed();
@@ -173,6 +176,18 @@ impl Backtest {
 
         let strategy = self.strategy().clone();
 
+        let time_range = date_range(
+            "time".into(),
+            (*self.begin() - chrono::Duration::minutes(*self.history_size() as i64)).naive_utc(),
+            self.end().naive_utc(),
+            Duration::parse("1m"),
+            ClosedWindow::Both,
+            TimeUnit::Nanoseconds,
+            Some(&chrono_tz::Asia::Shanghai),
+        )?
+        .into_column();
+        let time_range = DataFrame::new(vec![time_range])?.lazy();
+
         for code in codes {
             let start_time = Instant::now();
 
@@ -187,11 +202,16 @@ impl Backtest {
                 )),
             };
 
-            let mut df = LazyFrame::scan_ipc(
+            let df = LazyFrame::scan_ipc(
                 PlPathRef::from_local_path(file_path.as_path()).into_owned(),
                 Default::default(),
-            )?
-            .collect()?;
+            )?;
+
+            let mut df = time_range
+                .clone()
+                .left_join(df, col("time"), col("time"))
+                .fill_null(lit(0.0))
+                .collect()?;
 
             if df.should_rechunk() {
                 df.rechunk_mut();
