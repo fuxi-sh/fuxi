@@ -376,6 +376,8 @@ class Coins(Enum):
     MHYPE = auto()
     FLOW = auto()
     VNTLS = auto()
+    TANSSI = auto()
+    XION = auto()
 
     @staticmethod
     def members() -> List[Coins]: ...
