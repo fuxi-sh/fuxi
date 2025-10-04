@@ -7,7 +7,7 @@ use std::sync::Arc;
 pub struct Strategy {
     on_inject_context: Py<PyAny>,
     on_inject_backtest: Py<PyAny>,
-    on_start: Py<PyAny>,
+    on_init: Py<PyAny>,
     on_stop: Py<PyAny>,
     on_history_candle: Py<PyAny>,
     on_candle: Py<PyAny>,
@@ -21,7 +21,7 @@ impl Strategy {
     pub fn new(instance: &Bound<PyAny>) -> Result<Arc<Self>> {
         let on_inject_context = instance.getattr("_on_inject_context")?.unbind();
         let on_inject_backtest = instance.getattr("_on_inject_backtest")?.unbind();
-        let on_start = instance.getattr("_on_start")?.unbind();
+        let on_init = instance.getattr("_on_init")?.unbind();
         let on_stop = instance.getattr("_on_stop")?.unbind();
         let on_history_candle = instance.getattr("_on_history_candle")?.unbind();
         let on_candle = instance.getattr("_on_candle")?.unbind();
@@ -33,7 +33,7 @@ impl Strategy {
         Ok(Arc::new(Self {
             on_inject_context,
             on_inject_backtest,
-            on_start,
+            on_init,
             on_stop,
             on_history_candle,
             on_candle,
@@ -57,8 +57,8 @@ impl Strategy {
     }
 
     #[inline]
-    pub fn on_start(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_start.call0(py))?;
+    pub fn on_init(&self) -> Result<()> {
+        Python::with_gil(|py| self.on_init.call0(py))?;
         Ok(())
     }
 

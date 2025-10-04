@@ -165,8 +165,8 @@ class Strategy(ABC):
     # 事件
     # ================================================================ #
     @abstractmethod
-    def on_start(self):
-        """启动事件"""
+    def on_init(self):
+        """初始化事件"""
 
     @abstractmethod
     def on_stop(self):
@@ -203,8 +203,8 @@ class Strategy(ABC):
     def _on_inject_backtest(self, backtest: Backtest):
         self._backtest = backtest
 
-    def _on_start(self):
-        self.on_start()
+    def _on_init(self):
+        self.on_init()
 
     def _on_stop(self):
         self.on_stop()

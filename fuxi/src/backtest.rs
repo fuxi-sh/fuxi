@@ -114,7 +114,7 @@ impl Runtime for Backtest {
         let start_time = Instant::now();
         let strategy = self.strategy().clone();
 
-        strategy.on_start()?;
+        strategy.on_init()?;
 
         let codes = self
             .context()
