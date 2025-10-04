@@ -31,25 +31,7 @@ class Strategy(ABC):
         self.on_stop()
 
     def _on_history_candle(self, code: Codes, candles: DataFrame):
-        if self.mode == Mode.Backtest:
-            self._candles[code] = (
-                pl.select(
-                    pl.datetime_range(
-                        self._backtest.begin - timedelta(minutes=self._backtest.history_size),
-                        self._backtest.end,
-                        interval="1m",
-                        closed="both",
-                        time_unit="ns",
-                        time_zone="Asia/Shanghai",
-                    ).alias("time")
-                )
-                .lazy()
-                .join(candles.lazy(), on="time", how="left")
-                .fill_null(0.0)
-                .collect()
-            ).rechunk()
-        else:
-            self._candles[code] = candles.rechunk()
+        self._candles[code] = candles.rechunk()
         self._calculate_candle_indicators(code, self._candles[code])
 
     def _on_candle(self, code: Codes, candles: DataFrame):
