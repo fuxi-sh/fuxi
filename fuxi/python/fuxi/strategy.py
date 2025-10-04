@@ -162,7 +162,9 @@ class Strategy(ABC):
             return None
         df = self._candle_indicators[code][name]._indicator
         if self.mode == Mode.Backtest:
-            return df.slice(0, ((self.time - self._backtest.begin).seconds // 60))
+            return df.slice(
+                0, self._backtest.history_size + int((self.time - self._backtest.begin).total_seconds() / 60)
+            )
         else:
             return df
 
@@ -170,6 +172,8 @@ class Strategy(ABC):
         if code not in self._candles:
             return None
         if self.mode == Mode.Backtest:
-            return self._candles[code].slice(0, (self.time - self._backtest.begin).seconds // 60)
+            return self._candles[code].slice(
+                0, self._backtest.history_size + int((self.time - self._backtest.begin).total_seconds() / 60)
+            )
         else:
             return self._candles[code]
