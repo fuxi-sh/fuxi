@@ -27,7 +27,6 @@ class Backtest:
     ):
         """
         初始化回测引擎
-        ---
         - [`strategy`]: 策略实例
         - [`begin`]: 开始时间
         - [`end`]: 结束时间
