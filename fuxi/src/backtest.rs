@@ -134,7 +134,9 @@ impl Runtime for Backtest {
         while now <= end {
             self.context().set_time(now);
 
-            strategy.on_timer()?;
+            for code in &codes {
+                strategy.on_candle(*code, None)?;
+            }
 
             now += Duration::minutes(1);
             *self.offset_mut() += 1;

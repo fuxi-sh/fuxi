@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Optional
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 from .indicator import Indicator
@@ -215,7 +215,7 @@ class Strategy(ABC):
         self._calculate_candle_indicators(code, df)
         self.on_history_candle(code, df)
 
-    def _on_candle(self, code: Codes, candles: DataFrame):
+    def _on_candle(self, code: Codes, candles: Optional[DataFrame]):
         if self.mode == Mode.Backtest:
             df = self._candles[code].slice(0, self._backtest.offset)
         else:

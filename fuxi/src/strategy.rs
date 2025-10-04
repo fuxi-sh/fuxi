@@ -74,8 +74,8 @@ impl Strategy {
         Ok(())
     }
     #[inline]
-    pub fn on_candle(&self) -> Result<()> {
-        Python::with_gil(|py| self.on_candle.call0(py))?;
+    pub fn on_candle(&self, code: Codes, candles: Option<PyDataFrame>) -> Result<()> {
+        Python::with_gil(|py| self.on_candle.call1(py, (code, candles)))?;
         Ok(())
     }
 
