@@ -3,12 +3,9 @@ from decimal import Decimal
 from typing import Dict, Optional
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest, Timer, Order, Method, Direction, Side
-from .indicator import Indicator
 import polars as pl
 from polars import DataFrame
 from datetime import datetime
-from numpy.typing import NDArray
-import numpy as np
 
 
 class Strategy(ABC):
