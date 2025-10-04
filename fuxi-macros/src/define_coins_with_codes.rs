@@ -35,16 +35,17 @@ pub fn generate() -> Result<TokenStream> {
     let spot_path = dir.join("spot.json");
     let swap_path = dir.join("swap.json");
 
-    println!("cargo:warning=检查文件: {}", spot_path.display());
-    println!("cargo:warning=检查文件: {}", swap_path.display());
-
     let mut coins = vec![];
     let mut symbols = vec![];
 
-    let spot_json: Value = serde_json::from_str(
-        &std::fs::read_to_string(&spot_path).map_err(|err| Error::new(Span::call_site(), err))?,
-    )
-    .map_err(|err| Error::new(Span::call_site(), err))?;
+    let spot_json: Value =
+        serde_json::from_str(&std::fs::read_to_string(&spot_path).map_err(|err| {
+            Error::new(
+                Span::call_site(),
+                format!("读取文件失败:{} {}", spot_path.display(), err),
+            )
+        })?)
+        .map_err(|err| Error::new(Span::call_site(), err))?;
 
     for token in spot_json[0]["tokens"]
         .as_array()
@@ -109,10 +110,14 @@ pub fn generate() -> Result<TokenStream> {
         });
     }
 
-    let swap_json: Value = serde_json::from_str(
-        &std::fs::read_to_string(&swap_path).map_err(|err| Error::new(Span::call_site(), err))?,
-    )
-    .map_err(|err| Error::new(Span::call_site(), err))?;
+    let swap_json: Value =
+        serde_json::from_str(&std::fs::read_to_string(&swap_path).map_err(|err| {
+            Error::new(
+                Span::call_site(),
+                format!("读取文件失败:{} {}", swap_path.display(), err),
+            )
+        })?)
+        .map_err(|err| Error::new(Span::call_site(), err))?;
 
     for pair in swap_json[0]["universe"].as_array().unwrap().iter() {
         if let Some(flag) = pair["isDelisted"].as_bool()
