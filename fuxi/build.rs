@@ -62,6 +62,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let spot_path = cache_dir.join("spot.json");
     let swap_path = cache_dir.join("swap.json");
 
+    println!("cargo:warning=检查文件: {}", spot_path.display());
+    println!("cargo:warning=检查文件: {}", swap_path.display());
+
     println!("cargo:rerun-if-changed={}", spot_path.display());
     println!("cargo:rerun-if-changed={}", swap_path.display());
 
