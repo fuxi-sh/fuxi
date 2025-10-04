@@ -1,9 +1,10 @@
 use crate::{
     runtime::Runtime,
     types::{
-        alias::{Time, default_time},
-        base::{LogLevel, Mode, Volume},
+        alias::{Price, Size, Time, default_time},
+        base::{Codes, Direction, LogLevel, Method, Mode, Side, Volume},
         market::SymbolMap,
+        order::Order,
     },
 };
 use anyhow::Result;
@@ -12,7 +13,7 @@ use pyo3::{
     Bound, pymethods,
     types::{PyTuple, PyTupleMethods},
 };
-use std::fmt::Arguments;
+use std::{fmt::Arguments, sync::Arc};
 
 #[model(python)]
 pub struct Context {
@@ -21,7 +22,7 @@ pub struct Context {
     pub spot: Volume,
     pub swap: Volume,
     pub symbols: SymbolMap,
-    runtime: Option<Box<dyn Runtime + Send + Sync + 'static>>,
+    runtime: Option<Arc<dyn Runtime>>,
     log_level: (LogLevel, LogLevel),
 }
 
@@ -125,5 +126,25 @@ impl Context {
     #[staticmethod]
     fn new_id() -> String {
         crate::helpers::id::new()
+    }
+
+    #[pyo3(signature = (code, method, direction, side, size, price))]
+    fn place_order(
+        &self,
+        code: Codes,
+        method: Method,
+        direction: Direction,
+        side: Side,
+        size: Size,
+        price: Price,
+    ) -> Result<Order> {
+        let runtime = self.runtime().clone().unwrap();
+        runtime.place_order(code, method, direction, side, size, price)
+    }
+
+    #[pyo3(signature = (code, id))]
+    fn cancel_order(&self, code: Codes, id: &str) -> Result<()> {
+        let runtime = self.runtime().clone().unwrap();
+        runtime.cancel_order(code, id)
     }
 }

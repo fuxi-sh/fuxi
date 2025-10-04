@@ -7,6 +7,7 @@ use crate::{
         alias::{Price, Size, Time},
         base::{Codes, Direction, LogLevel, Market, Method, Side, Timer},
         market::Symbol,
+        order::Order,
     },
 };
 use anyhow::{Result, ensure};
@@ -93,7 +94,7 @@ impl Backtest {
 
         backtest
             .context()
-            .set_runtime(Some(Box::new(backtest.clone())));
+            .set_runtime(Some(Arc::new(backtest.clone())));
 
         strategy.on_inject_context(context.clone())?;
         strategy.on_inject_backtest(backtest.clone())?;
@@ -159,6 +160,7 @@ impl Runtime for Backtest {
         Ok(())
     }
 
+    #[allow(unused_variables)]
     fn place_order(
         &self,
         code: Codes,
@@ -167,11 +169,17 @@ impl Runtime for Backtest {
         side: Side,
         size: Size,
         price: Price,
-    ) -> Result<String> {
+    ) -> Result<Order> {
         todo!()
     }
 
+    #[allow(unused_variables)]
     fn cancel_order(&self, code: Codes, id: &str) -> Result<()> {
+        todo!()
+    }
+
+    #[allow(unused_variables)]
+    fn set_lever(&self, code: Codes, lever: Size) -> Result<()> {
         todo!()
     }
 }
