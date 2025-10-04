@@ -12,7 +12,7 @@ use crate::{
     types::{
         base::{
             Codes, Coins, Direction, Interval, LogLevel, Market, Method, Mode, OrderStatus, Pnl,
-            Side, Volume,
+            Side, Timer, Volume,
         },
         market::{Candle, FundingRate, Symbol},
         order::Order,
@@ -34,6 +34,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Side>()?;
     m.add_class::<OrderStatus>()?;
     m.add_class::<Interval>()?;
+    m.add_class::<Timer>()?;
     m.add_class::<Coins>()?;
     m.add_class::<Codes>()?;
     m.add_class::<Volume>()?;

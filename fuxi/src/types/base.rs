@@ -70,6 +70,13 @@ pub enum Interval {
     Month,
 }
 
+#[model(python)]
+pub enum Timer {
+    Daily,
+    Hourly,
+    Minutely,
+}
+
 define_coins_with_codes!();
 
 #[model(python)]

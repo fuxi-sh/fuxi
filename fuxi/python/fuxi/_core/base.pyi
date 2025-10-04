@@ -124,6 +124,18 @@ class Interval(Enum):
     @staticmethod
     def members() -> List[Interval]: ...
 
+class Timer(Enum):
+    """定时器"""
+
+    Daily = auto()
+    """每天"""
+    Hourly = auto()
+    """每小时"""
+    Minutely = auto()
+    """每分钟"""
+    @staticmethod
+    def members() -> List[Timer]: ...
+
 class Volume:
     """数量"""
 
