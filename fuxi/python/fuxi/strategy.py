@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict
 from pandas import DataFrame
 from ._core import Context, Codes, Mode, Volume, Symbol, LogLevel, Backtest
 from .indicator import Indicator
