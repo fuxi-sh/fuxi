@@ -9,57 +9,9 @@ from datetime import datetime
 
 
 class Strategy(ABC):
-    _context: Context
-    _backtest: Backtest
-    _candles: Dict[Codes, DataFrame]
-    _candle_indicators: Dict[Codes, Dict[str, Indicator]]
-
-    def __init__(self):
-        self._candles = {}
-        self._candle_indicators = {}
-
-    def _on_inject_context(self, context: Context):
-        self._context = context
-
-    def _on_inject_backtest(self, backtest: Backtest):
-        self._backtest = backtest
-
-    def _on_start(self):
-        self.on_start()
-
-    def _on_stop(self):
-        self.on_stop()
-
-    def _on_history_candle(self, code: Codes, candles: DataFrame):
-        self._candles[code] = candles.rechunk()
-        self._calculate_candle_indicators(code, self._candles[code])
-
-    def _on_candle(self, code: Codes, candles: DataFrame):
-        self._candles[code] = (
-            pl.concat(
-                [self._candles[code], candles],
-                how="horizontal",
-            )
-            .unique(
-                subset=["time"],
-                keep="last",
-                maintain_order=True,
-            )
-            .rechunk()
-        )
-        self._calculate_candle_indicators(code, self._candles[code])
-
-    def _on_timer(self):
-        self.on_timer()
-
-    def _on_position(self):
-        pass
-
-    def _on_order(self):
-        pass
-
-    def _on_cash(self):
-        pass
+    # ================================================================ #
+    # 属性
+    # ================================================================ #
 
     @property
     def mode(self) -> Mode:
@@ -85,6 +37,10 @@ class Strategy(ABC):
     def symbols(self) -> Dict[Codes, Symbol]:
         """交易对"""
         return self._context.symbols
+
+    # ================================================================ #
+    # API
+    # ================================================================ #
 
     def trace_log(self, *args):
         """显示链路日志"""
@@ -167,18 +123,6 @@ class Strategy(ABC):
         """
         self._context.set_log_level(engine, strategy)
 
-    @abstractmethod
-    def on_start(self):
-        """启动事件"""
-
-    @abstractmethod
-    def on_stop(self):
-        """停止事件"""
-
-    @abstractmethod
-    def on_timer(self):
-        """定时器事件"""
-
     def add_candle_indicator(self, code: Codes, indicator: Indicator):
         """
         添加K线指标
@@ -188,12 +132,6 @@ class Strategy(ABC):
         if code not in self._candle_indicators:
             self._candle_indicators[code] = {}
         self._candle_indicators[code][indicator.name] = indicator
-
-    def _calculate_candle_indicators(self, code: Codes, candles: DataFrame):
-        if code not in self._candle_indicators:
-            return
-        for name in self._candle_indicators[code]:
-            self._candle_indicators[code][name]._on_data(candles)
 
     def get_candle_indicator(self, code: Codes, name: str) -> DataFrame:
         """
@@ -222,3 +160,80 @@ class Strategy(ABC):
             return self._candles[code].slice(0, self._backtest.offset)
         else:
             return self._candles[code]
+
+    # ================================================================ #
+    # 事件
+    # ================================================================ #
+    @abstractmethod
+    def on_start(self):
+        """启动事件"""
+
+    @abstractmethod
+    def on_stop(self):
+        """停止事件"""
+
+    @abstractmethod
+    def on_timer(self):
+        """定时器事件"""
+
+    # ================================================================ #
+    # 内部
+    # ================================================================ #
+
+    _context: Context
+    _backtest: Backtest
+    _candles: Dict[Codes, DataFrame]
+    _candle_indicators: Dict[Codes, Dict[str, Indicator]]
+
+    def __init__(self):
+        self._candles = {}
+        self._candle_indicators = {}
+
+    def _on_inject_context(self, context: Context):
+        self._context = context
+
+    def _on_inject_backtest(self, backtest: Backtest):
+        self._backtest = backtest
+
+    def _on_start(self):
+        self.on_start()
+
+    def _on_stop(self):
+        self.on_stop()
+
+    def _on_history_candle(self, code: Codes, candles: DataFrame):
+        self._candles[code] = candles.rechunk()
+        self._calculate_candle_indicators(code, self._candles[code])
+
+    def _on_candle(self, code: Codes, candles: DataFrame):
+        self._candles[code] = (
+            pl.concat(
+                [self._candles[code], candles],
+                how="horizontal",
+            )
+            .unique(
+                subset=["time"],
+                keep="last",
+                maintain_order=True,
+            )
+            .rechunk()
+        )
+        self._calculate_candle_indicators(code, self._candles[code])
+
+    def _on_timer(self):
+        self.on_timer()
+
+    def _on_position(self):
+        pass
+
+    def _on_order(self):
+        pass
+
+    def _on_cash(self):
+        pass
+
+    def _calculate_candle_indicators(self, code: Codes, candles: DataFrame):
+        if code not in self._candle_indicators:
+            return
+        for name in self._candle_indicators[code]:
+            self._candle_indicators[code][name]._on_data(candles)
