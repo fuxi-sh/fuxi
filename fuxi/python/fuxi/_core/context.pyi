@@ -1,8 +1,9 @@
-from typing import Dict
+from typing import Dict, Optional
 from .market import Symbol
 from .code import Codes
-from .base import LogLevel, Mode, Volume
-from .alias import Time
+from .base import LogLevel, Mode, Volume, Method, Direction, Side
+from .alias import Time, Price, Size
+from .order import Order
 
 class Context:
     """上下文"""
@@ -26,6 +27,34 @@ class Context:
         设置日志级别
         - [`engine`]: 引擎日志级别
         - [`strategy`]: 策略日志级别
+        """
+
+    def place_order(
+        self,
+        code: Codes,
+        method: Method,
+        direction: Direction,
+        side: Side,
+        size: Size,
+        price: Price,
+        remark: Optional[str],
+    ) -> Order:
+        """
+        下单
+        - [`code`]: 交易对
+        - [`method`]: 交易方式
+        - [`direction`]: 交易方向
+        - [`side`]: 买卖方向
+        - [`size`]: 订单数量
+        - [`price`]: 订单价格
+        - [`remark`]: 备注
+        """
+
+    def cancel_order(self, code: Codes, id: str):
+        """
+        取消订单
+        - [`code`]: 交易对
+        - [`id`]: 订单id
         """
 
     @staticmethod

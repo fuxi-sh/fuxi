@@ -169,6 +169,7 @@ impl Runtime for Backtest {
         side: Side,
         size: Size,
         price: Price,
+        remark: Option<String>,
     ) -> Result<Order> {
         todo!()
     }

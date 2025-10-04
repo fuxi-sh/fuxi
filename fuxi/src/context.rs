@@ -128,7 +128,8 @@ impl Context {
         crate::helpers::id::new()
     }
 
-    #[pyo3(signature = (code, method, direction, side, size, price))]
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (code, method, direction, side, size, price, remark=None))]
     fn place_order(
         &self,
         code: Codes,
@@ -137,9 +138,10 @@ impl Context {
         side: Side,
         size: Size,
         price: Price,
+        remark: Option<String>,
     ) -> Result<Order> {
         let runtime = self.runtime().clone().unwrap();
-        runtime.place_order(code, method, direction, side, size, price)
+        runtime.place_order(code, method, direction, side, size, price, remark)
     }
 
     #[pyo3(signature = (code, id))]
