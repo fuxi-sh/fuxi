@@ -1,4 +1,4 @@
-from .base import LogLevel, Mode, Market, Method, Direction, Side, OrderStatus, Interval, Volume, Pnl, Timer
+from .base import LogLevel, Mode, Market, Method, Direction, Side, OrderStatus, Interval, Timer, Volume, Pnl
 from .code import Coins, Codes
 from .market import Candle, FundingRate, Symbol
 from .order import Order
@@ -15,6 +15,7 @@ __all__ = [
     "Side",
     "OrderStatus",
     "Interval",
+    "Timer",
     "Volume",
     "Pnl",
     "Coins",
