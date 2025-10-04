@@ -7,6 +7,8 @@ from .indicator import Indicator
 import polars as pl
 from polars import DataFrame
 from datetime import datetime
+from numpy.typing import NDArray
+import numpy as np
 
 
 class Strategy(ABC):
@@ -127,27 +129,20 @@ class Strategy(ABC):
         """
         self._context.set_log_level(engine, strategy)
 
-    def add_candle_indicator(self, code: Codes, indicator: Indicator):
+    def flush_signal(self, signal: DataFrame, name: str = "default"):
         """
-        添加K线指标
-        - [`code`]: 交易对
-        - [`indicator`]: 指标
+        刷新信号
+        - [`signal`]: 信号
+        - [`name`]: 信号名
         """
-        if code not in self._candle_indicators:
-            self._candle_indicators[code] = {}
-        self._candle_indicators[code][indicator.name] = indicator
+        self._signals[name] = signal.rechunk()
 
-    def get_candle_indicator(self, code: Codes, name: str) -> DataFrame:
+    def get_signal(self, name: str = "default") -> DataFrame:
         """
-        获取K线指标
-        - [`code`]: 交易对
-        - [`name`]: 指标名称
+        获取信号
+        - [`name`]: 信号名
         """
-        if code not in self._candle_indicators:
-            return None
-        if name not in self._candle_indicators[code]:
-            return None
-        df = self._candle_indicators[code][name]._indicator
+        df = self._signals[name]
         if self.mode == Mode.Backtest:
             return df.slice(0, self._backtest.offset)
         else:
@@ -312,9 +307,6 @@ class Strategy(ABC):
     def on_stop(self):
         """停止事件"""
 
-    def on_history_candle(self, code: Codes, candles: DataFrame):
-        """历史K线事件"""
-
     def on_candle(self, code: Codes, candles: DataFrame):
         """K线事件"""
 
@@ -324,6 +316,15 @@ class Strategy(ABC):
     def on_timer(self, timer: Timer):
         """定时器事件"""
 
+    def on_position(self):
+        """持仓事件"""
+
+    def on_order(self):
+        """订单事件"""
+
+    def on_cash(self):
+        """资金事件"""
+
     # ================================================================ #
     # 内部
     # ================================================================ #
@@ -331,11 +332,11 @@ class Strategy(ABC):
     _context: Context
     _backtest: Backtest
     _candles: Dict[Codes, DataFrame]
-    _candle_indicators: Dict[Codes, Dict[str, Indicator]]
+    _signals: Dict[str, DataFrame]
 
     def __init__(self):
         self._candles = {}
-        self._candle_indicators = {}
+        self._signals = {}
 
     def _on_inject_context(self, context: Context):
         self._context = context
@@ -352,44 +353,38 @@ class Strategy(ABC):
     def _on_history_candle(self, code: Codes, candles: DataFrame):
         df = candles.rechunk()
         self._candles[code] = df
-        self._calculate_candle_indicators(code, df)
-        self.on_history_candle(code, df)
+        self.on_candle(code, df)
+        if self.mode != Mode.Backtest:
+            self.on_signal()
 
     def _on_candle(self, code: Codes, candles: DataFrame):
-        if self.mode == Mode.Backtest:
-            df = self._candles[code].slice(0, self._backtest.offset)
-        else:
-            df = (
-                pl.concat(
-                    [self._candles[code], candles],
-                    how="horizontal",
-                )
-                .unique(
-                    subset=["time"],
-                    keep="last",
-                    maintain_order=True,
-                )
-                .rechunk()
+        df = (
+            pl.concat(
+                [self._candles[code], candles],
+                how="horizontal",
             )
-            self._candles[code] = df
-            self._calculate_candle_indicators(code, df)
+            .unique(
+                subset=["time"],
+                keep="last",
+                maintain_order=True,
+            )
+            .rechunk()
+        )
+        self._candles[code] = df
         self.on_candle(code, df)
+        self.on_signal()
+
+    def _on_backtest_tick(self):
         self.on_signal()
 
     def _on_timer(self, timer: Timer):
         self.on_timer(timer)
 
     def _on_position(self):
-        pass
+        self.on_position()
 
     def _on_order(self):
-        pass
+        self.on_order()
 
     def _on_cash(self):
-        pass
-
-    def _calculate_candle_indicators(self, code: Codes, candles: DataFrame):
-        if code not in self._candle_indicators:
-            return
-        for name in self._candle_indicators[code]:
-            self._candle_indicators[code][name]._on_data(candles)
+        self.on_cash()

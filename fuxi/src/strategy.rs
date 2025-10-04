@@ -15,6 +15,7 @@ pub struct Strategy {
     on_stop: Py<PyAny>,
     on_history_candle: Py<PyAny>,
     on_candle: Py<PyAny>,
+    on_backtest_tick: Py<PyAny>,
     on_timer: Py<PyAny>,
     on_position: Py<PyAny>,
     on_order: Py<PyAny>,
@@ -29,6 +30,7 @@ impl Strategy {
         let on_stop = instance.getattr("_on_stop")?.unbind();
         let on_history_candle = instance.getattr("_on_history_candle")?.unbind();
         let on_candle = instance.getattr("_on_candle")?.unbind();
+        let on_backtest_tick = instance.getattr("_on_backtest_tick")?.unbind();
         let on_timer = instance.getattr("_on_timer")?.unbind();
         let on_position = instance.getattr("_on_position")?.unbind();
         let on_order = instance.getattr("_on_order")?.unbind();
@@ -41,6 +43,7 @@ impl Strategy {
             on_stop,
             on_history_candle,
             on_candle,
+            on_backtest_tick,
             on_timer,
             on_position,
             on_order,
@@ -80,6 +83,12 @@ impl Strategy {
     #[inline]
     pub fn on_candle(&self, code: Codes, candles: Option<PyDataFrame>) -> Result<()> {
         Python::with_gil(|py| self.on_candle.call1(py, (code, candles)))?;
+        Ok(())
+    }
+
+    #[inline]
+    pub fn on_backtest_tick(&self) -> Result<()> {
+        Python::with_gil(|py| self.on_backtest_tick.call0(py))?;
         Ok(())
     }
 

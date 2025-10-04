@@ -98,6 +98,7 @@ impl Backtest {
 
         strategy.on_inject_context(context.clone())?;
         strategy.on_inject_backtest(backtest.clone())?;
+        strategy.on_init()?;
 
         Ok(backtest)
     }
@@ -114,8 +115,6 @@ impl Runtime for Backtest {
     fn run(&self) -> Result<()> {
         let start_time = Instant::now();
         let strategy = self.strategy().clone();
-
-        strategy.on_init()?;
 
         let codes = self
             .context()
@@ -135,9 +134,7 @@ impl Runtime for Backtest {
         while now <= end {
             self.context().set_time(now);
 
-            for code in &codes {
-                strategy.on_candle(*code, None)?;
-            }
+            strategy.on_backtest_tick()?;
 
             strategy.on_timer(Timer::Minutely)?;
             if now.minute() == 0 {
